@@ -74,7 +74,7 @@ public class DataColumnDocument {
     ) {
         DataColumnDocument document = new DataColumnDocument();
         document.setName(column.getName());
-        document.setBytes(column.getDataColumnBytes().toByteArray());
+        document.setBytes(column.getPayload().toByteArray());
         return document;
     }
 
@@ -99,7 +99,7 @@ public class DataColumnDocument {
     public SerializedDataColumn toSerializedDataColumn() throws DpException {
         final SerializedDataColumn.Builder serializedDataColumnBuilder = SerializedDataColumn.newBuilder();
         if (this.bytes != null) {
-            serializedDataColumnBuilder.setDataColumnBytes(ByteString.copyFrom(this.getBytes()));
+            serializedDataColumnBuilder.setPayload(ByteString.copyFrom(this.getBytes()));
         }
         serializedDataColumnBuilder.setName(this.getName());
         return serializedDataColumnBuilder.build();

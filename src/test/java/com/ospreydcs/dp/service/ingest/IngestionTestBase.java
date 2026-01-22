@@ -295,7 +295,7 @@ public class IngestionTestBase {
                 final SerializedDataColumn serializedDataColumn =
                         SerializedDataColumn.newBuilder()
                                 .setName(dataColumn.getName())
-                                .setDataColumnBytes(dataColumn.toByteString())
+                                .setPayload(dataColumn.toByteString())
                                 .build();
                 dataFrameBuilder.addSerializedDataColumns(serializedDataColumn);
             }

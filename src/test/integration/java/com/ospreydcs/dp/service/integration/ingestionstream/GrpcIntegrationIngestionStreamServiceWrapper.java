@@ -190,7 +190,7 @@ public class GrpcIntegrationIngestionStreamServiceWrapper extends GrpcIntegratio
                             actualSerializedColumnCount = actualSerializedColumnCount + 1;
                             try {
                                 bucketColumn =
-                                        DataColumn.parseFrom(dataBucket.getSerializedDataColumn().getDataColumnBytes());
+                                        DataColumn.parseFrom(dataBucket.getSerializedDataColumn().getPayload());
                             } catch (InvalidProtocolBufferException e) {
                                 fail(("InvalidProtocolException parsing SerializedDataColumn: " + e.getMessage()));
                             }

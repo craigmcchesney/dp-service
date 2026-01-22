@@ -267,11 +267,6 @@ public abstract class QueryBenchmarkBase {
         querySpecBuilder.setBeginTime(beginTimeBuilder);
         querySpecBuilder.setEndTime(endTimeBuilder);
         querySpecBuilder.addAllPvNames(params.columnNames);
-        if (params.useSerializedDataColumns) {
-            querySpecBuilder.setUseSerializedDataColumns(true);
-        } else {
-            querySpecBuilder.setUseSerializedDataColumns(false);
-        }
         querySpecBuilder.build();
         requestBuilder.setQuerySpec(querySpecBuilder);
 

@@ -101,7 +101,7 @@ public class QueryTestBase {
         }
 
         // specify whether to use SerializedDataColumns or regular DataColumns
-        querySpecBuilder.setUseSerializedDataColumns(params.useSerializedDataColumns);
+//        querySpecBuilder.setUseSerializedDataColumns(params.useSerializedDataColumns);
 
         querySpecBuilder.build();
         requestBuilder.setQuerySpec(querySpecBuilder);

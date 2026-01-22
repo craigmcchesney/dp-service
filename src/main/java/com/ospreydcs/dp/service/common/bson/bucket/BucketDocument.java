@@ -199,13 +199,15 @@ public class BucketDocument extends DpBsonDocumentBase {
         bucketBuilder.setDataTimestamps(dataTimestamps);
 
         // add data values
-        if (querySpec.getUseSerializedDataColumns()) {
-            SerializedDataColumn serializedDataColumn = document.getDataColumn().toSerializedDataColumn();
-            bucketBuilder.setSerializedDataColumn(serializedDataColumn);
-        } else {
-            DataColumn dataColumn = document.getDataColumn().toDataColumn();
-            bucketBuilder.setDataColumn(dataColumn);
-        }
+//        if (querySpec.getUseSerializedDataColumns()) {
+//            SerializedDataColumn serializedDataColumn = document.getDataColumn().toSerializedDataColumn();
+//            bucketBuilder.setSerializedDataColumn(serializedDataColumn);
+//        } else {
+//            DataColumn dataColumn = document.getDataColumn().toDataColumn();
+//            bucketBuilder.setDataColumn(dataColumn);
+//        }
+        DataColumn dataColumn = document.getDataColumn().toDataColumn();
+        bucketBuilder.setDataColumn(dataColumn);
 
         // add tags
         if (document.getTags() != null) {

@@ -434,7 +434,8 @@ public class GrpcIntegrationQueryServiceWrapper extends GrpcIntegrationServiceWr
 
                     } else if (responseBucket.hasSerializedDataColumn()) {
                         try {
-                            responseDataColumn = DataColumn.parseFrom(responseBucket.getSerializedDataColumn().getDataColumnBytes());
+                            responseDataColumn = DataColumn.parseFrom(
+                                    responseBucket.getSerializedDataColumn().getPayload());
                         } catch (InvalidProtocolBufferException e) {
                             fail("exception parsing DataColumn from SerializedDataColumn: " + e.getMessage());
                         }

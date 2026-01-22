@@ -577,7 +577,7 @@ public class EventMonitor {
             if (pvConditionTrigger != null) {
                 final DataColumn dataColumn;
                 try {
-                    dataColumn = DataColumn.parseFrom(serializedDataColumn.getDataColumnBytes());
+                    dataColumn = DataColumn.parseFrom(serializedDataColumn.getPayload());
                 } catch (InvalidProtocolBufferException e) {
                     final String errorMsg = "InvalidProtocolBufferException msg: " + e.getMessage();
                     logger.error(errorMsg + " id: " + responseObserver.hashCode());

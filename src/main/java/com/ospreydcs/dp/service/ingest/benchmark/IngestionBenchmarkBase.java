@@ -191,7 +191,7 @@ public abstract class IngestionBenchmarkBase {
                 final SerializedDataColumn serializedDataColumn =
                         SerializedDataColumn.newBuilder()
                                 .setName(dataColumn.getName())
-                                .setDataColumnBytes(dataColumn.toByteString())
+                                .setPayload(dataColumn.toByteString())
                                 .build();
                 serializedDataColumnList.add(serializedDataColumn);
             } else {

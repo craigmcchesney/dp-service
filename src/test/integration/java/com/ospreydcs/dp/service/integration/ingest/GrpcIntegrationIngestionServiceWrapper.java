@@ -572,7 +572,7 @@ public class GrpcIntegrationIngestionServiceWrapper extends GrpcIntegrationServi
                 final SerializedDataColumn serializedDataColumn = serializedDataColumnList.get(pvIndex);
                 // deserialize column for comparison
                 try {
-                    requestDataColumn = DataColumn.parseFrom(serializedDataColumn.getDataColumnBytes());
+                    requestDataColumn = DataColumn.parseFrom(serializedDataColumn.getPayload());
                 } catch (InvalidProtocolBufferException e) {
                     fail("exception deserializing DataColumn: " + e.getMessage());
                 }
@@ -1094,7 +1094,7 @@ public class GrpcIntegrationIngestionServiceWrapper extends GrpcIntegrationServi
             for (SerializedDataColumn serializedDataColumn : responseResult.getSerializedDataColumnsList()) {
                 DataColumn deserializedDataColumn = null;
                 try {
-                    deserializedDataColumn = DataColumn.parseFrom(serializedDataColumn.getDataColumnBytes());
+                    deserializedDataColumn = DataColumn.parseFrom(serializedDataColumn.getPayload());
                 } catch (InvalidProtocolBufferException e) {
                     fail("exception deserializing response SerializedDataColumn: " + e.getMessage());
                 }
@@ -1145,7 +1145,7 @@ public class GrpcIntegrationIngestionServiceWrapper extends GrpcIntegrationServi
                         continue;
                     }
                     try {
-                        assertEquals(DataColumn.parseFrom(requestSerializedColumn.getDataColumnBytes()), responseDataColumn);
+                        assertEquals(DataColumn.parseFrom(requestSerializedColumn.getPayload()), responseDataColumn);
                     } catch (InvalidProtocolBufferException e) {
                         fail("exception deserializing request SerializedDatacolumn: " + e.getMessage());
                     }
