@@ -615,7 +615,7 @@ public class GrpcIntegrationIngestionServiceWrapper extends GrpcIntegrationServi
         return bucketDocumentList;
     }
 
-    protected List<BucketDocument> sendAndVerifyIngestData(
+    public List<BucketDocument> sendAndVerifyIngestData(
             IngestionTestBase.IngestionRequestParams params,
             IngestDataRequest ingestionRequest,
             int numSerializedDataColumnsExpected

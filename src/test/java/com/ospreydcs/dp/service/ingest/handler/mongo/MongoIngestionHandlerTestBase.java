@@ -353,7 +353,7 @@ public class MongoIngestionHandlerTestBase extends IngestionTestBase {
         dataColumnBuilder.addDataValues(doubleValue);
         dataColumnList.add(dataColumnBuilder.build());
 
-        IngestDataRequest request = buildIngestionRequest(params, dataColumnList);
+        IngestDataRequest request = buildIngestionRequest(params, dataColumnList, null);
 
         // send request and examine responses
         HandlerIngestionRequest handlerIngestionRequest =

@@ -142,7 +142,7 @@ public class IngestionTestBase {
     }
 
     public static IngestDataRequest buildIngestionRequest(IngestionRequestParams params) {
-        return buildIngestionRequest(params, null);
+        return buildIngestionRequest(params, null, null);
     }
 
     /**
@@ -150,11 +150,13 @@ public class IngestionTestBase {
      * This utility avoids having code to build API requests scattered around the test methods.
      *
      * @param params
+     * @param doubleColumnList
      * @return
      */
     public static IngestDataRequest buildIngestionRequest(
             IngestionRequestParams params,
-            List<DataColumn> dataColumnList
+            List<DataColumn> dataColumnList,
+            List<DoubleColumn> doubleColumnList
     ) {
         IngestDataRequest.Builder requestBuilder = IngestDataRequest.newBuilder();
 
@@ -214,8 +216,12 @@ public class IngestionTestBase {
         final List<DataColumn> frameColumns = new ArrayList<>();
 
         if (dataColumnList != null) {
-            // use list of columns if provided by caller
+            // use list of DataColumns provided by caller
             frameColumns.addAll(dataColumnList);
+
+        } else if (doubleColumnList != null) {
+            // use list of DoubleColumns provided by caller
+            dataFrameBuilder.addAllDoubleColumns(doubleColumnList);
 
         } else if (params.columnNames != null) {
             // otherwise create columns from params

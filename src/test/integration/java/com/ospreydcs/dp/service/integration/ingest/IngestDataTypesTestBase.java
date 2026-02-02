@@ -159,7 +159,7 @@ public abstract class IngestDataTypesTestBase extends GrpcIntegrationTestBase {
 
             // build request
             final IngestDataRequest ingestionRequest =
-                    IngestionTestBase.buildIngestionRequest(params, arrayDataColumnList);
+                    IngestionTestBase.buildIngestionRequest(params, arrayDataColumnList, null);
 
             // send request
             final List<BucketDocument> bucketDocumentList=
@@ -278,7 +278,7 @@ public abstract class IngestDataTypesTestBase extends GrpcIntegrationTestBase {
 
             // build request
             final IngestDataRequest ingestionRequest =
-                    IngestionTestBase.buildIngestionRequest(params, dataColumnList);
+                    IngestionTestBase.buildIngestionRequest(params, dataColumnList, null);
 
             // send request
             final List<BucketDocument> bucketDocumentList=
@@ -489,7 +489,7 @@ public abstract class IngestDataTypesTestBase extends GrpcIntegrationTestBase {
 
             // build request
             final IngestDataRequest ingestionRequest =
-                    IngestionTestBase.buildIngestionRequest(params, dataColumnList);
+                    IngestionTestBase.buildIngestionRequest(params, dataColumnList, null);
 
             // send request
             final List<BucketDocument> bucketDocumentList =
