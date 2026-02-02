@@ -459,49 +459,6 @@ public class GrpcIntegrationQueryServiceWrapper extends GrpcIntegrationServiceWr
                         valueIndex = valueIndex + 1;
                     }
 
-                    // check tags
-                    if (columnBucketInfo.tags() != null) {
-                        assertEquals(columnBucketInfo.tags(), responseBucket.getTagsList());
-                    } else {
-                        assertTrue(responseBucket.getTagsList().isEmpty());
-                    }
-
-                    // check attributes
-                    if (columnBucketInfo.attributes() != null) {
-                        assertEquals(
-                                columnBucketInfo.attributes(),
-                                AttributesUtility.attributeMapFromList(responseBucket.getAttributesList()));
-                    } else {
-                        assertTrue(responseBucket.getAttributesList().isEmpty());
-                    }
-
-                    // check event metadata
-                    if (columnBucketInfo.eventDescription() != null) {
-                        assertEquals(
-                                columnBucketInfo.eventDescription(),
-                                responseBucket.getEventMetadata().getDescription());
-                    }
-                    if (columnBucketInfo.eventStartSeconds() != null) {
-                        assertEquals(
-                                (long) columnBucketInfo.eventStartSeconds(),
-                                responseBucket.getEventMetadata().getStartTimestamp().getEpochSeconds());
-                    }
-                    if (columnBucketInfo.eventStartNanos() != null) {
-                        assertEquals(
-                                (long) columnBucketInfo.eventStartNanos(),
-                                responseBucket.getEventMetadata().getStartTimestamp().getNanoseconds());
-                    }
-                    if (columnBucketInfo.eventStopSeconds() != null) {
-                        assertEquals(
-                                (long) columnBucketInfo.eventStopSeconds(),
-                                responseBucket.getEventMetadata().getStopTimestamp().getEpochSeconds());
-                    }
-                    if (columnBucketInfo.eventStopNanos() != null) {
-                        assertEquals(
-                                (long) columnBucketInfo.eventStopNanos(),
-                                responseBucket.getEventMetadata().getStopTimestamp().getNanoseconds());
-                    }
-
                     validatedBuckets = validatedBuckets + 1;
                 }
             }

@@ -228,21 +228,6 @@ public class MongoIngestionHandlerTestBase extends IngestionTestBase {
 
             assertTrue(bucket.getDataTimestamps().getSamplePeriod() == sampleIntervalNanos);
             assertTrue(bucket.getDataTimestamps().getSampleCount() == numSamples);
-            assertTrue(bucket.getAttributes().equals(params.attributes));
-            final EventMetadataDocument eventMetadataDocument = bucket.getEvent();
-            assertTrue(eventMetadataDocument.getDescription().equals(params.eventDescription));
-            assertEquals(
-                    (long) params.eventStartSeconds,
-                    eventMetadataDocument.getStartTime().getSeconds());
-            assertEquals(
-                    (long) params.eventStartNanos,
-                    eventMetadataDocument.getStartTime().getNanos());
-            assertEquals(
-                    (long) params.eventStopSeconds,
-                    eventMetadataDocument.getStopTime().getSeconds());
-            assertEquals(
-                    (long) params.eventStopNanos,
-                    eventMetadataDocument.getStopTime().getNanos());
 
             columnIndex = columnIndex + 1;
         }
@@ -285,12 +270,7 @@ public class MongoIngestionHandlerTestBase extends IngestionTestBase {
                         columnNames,
                         IngestionDataType.DOUBLE,
                         values,
-                        null, attributes,
-                        eventDescription,
-                        firstSeconds,
-                        firstNanos,
-                        null,
-                        null, false);
+                        false);
         IngestDataRequest request = buildIngestionRequest(params);
 
         // send request and examine responses
@@ -336,12 +316,8 @@ public class MongoIngestionHandlerTestBase extends IngestionTestBase {
                         columnNames,
                         IngestionDataType.ARRAY_DOUBLE,
                         null, // don't set any column values, we're going to override
-                        null, attributes,
-                        eventDescription,
-                        firstSeconds,
-                        firstNanos,
                         null,
-                        null, false);
+                        false);
 
         // override the column data with both string and float data, to trigger mismatch exception
         List<DataColumn> dataColumnList = new ArrayList<>();
@@ -399,12 +375,7 @@ public class MongoIngestionHandlerTestBase extends IngestionTestBase {
                         columnNames,
                         IngestionDataType.DOUBLE,
                         values,
-                        null, attributes,
-                        eventDescription,
-                        firstSeconds,
-                        firstNanos,
-                        firstSeconds + 1,
-                        firstNanos + 999_000_000L, false);
+                        false);
         IngestDataRequest request = buildIngestionRequest(params);
 
         // send request and examine responses
@@ -458,12 +429,7 @@ public class MongoIngestionHandlerTestBase extends IngestionTestBase {
                         columnNames,
                         IngestionDataType.STRING,
                         values,
-                        null, attributes,
-                        eventDescription,
-                        firstSeconds,
-                        firstNanos,
-                        firstSeconds + 1,
-                        firstNanos + 999_000_000L, false);
+                        false);
         IngestDataRequest request = buildIngestionRequest(params);
 
         // send request and examine responses
@@ -506,12 +472,7 @@ public class MongoIngestionHandlerTestBase extends IngestionTestBase {
                         columnNames,
                         IngestionDataType.INT,
                         values,
-                        null, attributes,
-                        eventDescription,
-                        firstSeconds,
-                        firstNanos,
-                        firstSeconds + 1,
-                        firstNanos + 999_000_000L, false);
+                        false);
         IngestDataRequest request = buildIngestionRequest(params);
 
         // send request and examine responses
@@ -554,12 +515,7 @@ public class MongoIngestionHandlerTestBase extends IngestionTestBase {
                         columnNames,
                         IngestionDataType.BOOLEAN,
                         values,
-                        null, attributes,
-                        eventDescription,
-                        firstSeconds,
-                        firstNanos,
-                        firstSeconds + 1,
-                        firstNanos + 999_000_000L, false);
+                        false);
         IngestDataRequest request = buildIngestionRequest(params);
 
         // send request and examine responses
@@ -606,12 +562,7 @@ public class MongoIngestionHandlerTestBase extends IngestionTestBase {
                         columnNames,
                         IngestionDataType.ARRAY_DOUBLE,
                         values,
-                        null, attributes,
-                        eventDescription,
-                        firstSeconds,
-                        firstNanos,
-                        firstSeconds + 1,
-                        firstNanos + 999_000_000L, false);
+                        false);
         IngestDataRequest request = buildIngestionRequest(params);
 
         // send request and examine responses

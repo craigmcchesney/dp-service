@@ -257,35 +257,10 @@ public abstract class IngestionBenchmarkBase {
             dataTimestampsBuilder.setSamplingClock(samplingClockBuilder);
         }
         dataTimestampsBuilder.build();
+
         dataFrameBuilder.setDataTimestamps(dataTimestampsBuilder);
-
-
-        // add some attributes and event metadata
-        final EventMetadata.Builder eventMetadataBuilder = EventMetadata.newBuilder();
-        eventMetadataBuilder.setDescription("calibration test");
-
-        final Timestamp.Builder eventTimeBuilder = Timestamp.newBuilder();
-        eventTimeBuilder.setEpochSeconds(params.startSeconds);
-        eventTimeBuilder.setNanoseconds(0);
-        eventTimeBuilder.build();
-
-        eventMetadataBuilder.setStartTimestamp(eventTimeBuilder);
-        eventMetadataBuilder.build();
-        requestBuilder.setEventMetadata(eventMetadataBuilder);
-
-        final Attribute.Builder subsystemAttributeBuilder = Attribute.newBuilder();
-        subsystemAttributeBuilder.setName("subsystem");
-        subsystemAttributeBuilder.setValue("vacuum");
-        subsystemAttributeBuilder.build();
-        requestBuilder.addAttributes(subsystemAttributeBuilder);
-
-        final Attribute.Builder sectorAttributeBuilder = Attribute.newBuilder();
-        sectorAttributeBuilder.setName("sector");
-        sectorAttributeBuilder.setValue("07");
-        sectorAttributeBuilder.build();
-        requestBuilder.addAttributes(sectorAttributeBuilder);
-
         dataFrameBuilder.build();
+
         requestBuilder.setIngestionDataFrame(dataFrameBuilder);
         return requestBuilder.build();
     }

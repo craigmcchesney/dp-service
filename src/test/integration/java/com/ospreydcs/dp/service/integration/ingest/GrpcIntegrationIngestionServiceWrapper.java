@@ -94,14 +94,7 @@ public class GrpcIntegrationIngestionServiceWrapper extends GrpcIntegrationServi
             long intervalNanos,
             List<Object> dataValues,
             List<Long> timestampSecondsList,
-            List<Long> timestampNanosList,
-            List<String> tags,
-            Map<String, String> attributes,
-            String eventDescription,
-            Long eventStartSeconds,
-            Long eventStartNanos,
-            Long eventStopSeconds,
-            Long eventStopNanos
+            List<Long> timestampNanosList
     ) {
     }
 
@@ -586,28 +579,6 @@ public class GrpcIntegrationIngestionServiceWrapper extends GrpcIntegrationServi
             // this compares each DataValue including ValueStatus, confirmed in debugger
             assertEquals(requestDataColumn, bucketDataColumn);
 
-            // check tags
-            if (params.tags != null) {
-                assertEquals(params.tags, bucketDocument.getTags());
-            } else {
-                assertTrue(bucketDocument.getTags() == null || bucketDocument.getTags().isEmpty());
-            }
-
-            // check attributes
-            if (params.attributes != null) {
-                assertEquals(params.attributes, bucketDocument.getAttributes());
-            } else {
-                assertTrue(bucketDocument.getAttributes() == null || bucketDocument.getAttributes().isEmpty());
-            }
-
-            // check event metadata
-            if (params.eventDescription != null) {
-                assertNotNull(bucketDocument.getEvent());
-                assertEquals(request.getEventMetadata(), bucketDocument.getEvent().toEventMetadata());
-            } else {
-                assertNull(bucketDocument.getEvent());
-            }
-
             pvIndex = pvIndex + 1;
         }
         assertEquals(numSerializedDataColumnsExpected, serializedDataColumnCount);
@@ -730,13 +701,6 @@ public class GrpcIntegrationIngestionServiceWrapper extends GrpcIntegrationServi
                             List.of(columnName),
                             IngestionTestBase.IngestionDataType.DOUBLE,
                             columnValues,
-                            columnInfo.tags,
-                            columnInfo.attributes,
-                            columnInfo.eventDescription,
-                            columnInfo.eventStartSeconds,
-                            columnInfo.eventStartNanos,
-                            columnInfo.eventStopSeconds,
-                            columnInfo.eventStopNanos,
                             columnInfo.useSerializedDataColumns
                     );
             paramsList.add(params);
@@ -759,14 +723,7 @@ public class GrpcIntegrationIngestionServiceWrapper extends GrpcIntegrationServi
                             bucketInfoSamplePeriod,
                             dataValuesList,
                             timestampSecondsList,
-                            timestampNanosList,
-                            columnInfo.tags,
-                            columnInfo.attributes,
-                            columnInfo.eventDescription,
-                            columnInfo.eventStartSeconds,
-                            columnInfo.eventStartNanos,
-                            columnInfo.eventStopSeconds,
-                            columnInfo.eventStopNanos
+                            timestampNanosList
                     );
             bucketInfoMap.put(currentSeconds, startNanos, bucketInfo);
 

@@ -47,13 +47,6 @@ public class IngestionTestBase {
         public IngestionDataType dataType = null;
         public List<List<Object>> values = null;
         public List<List<DataValue.ValueStatus>> valuesStatus = null;
-        public List<String> tags = null;
-        public Map<String, String> attributes = null;
-        public String eventDescription = null;
-        public Long eventStartSeconds = null;
-        public Long eventStartNanos = null;
-        public Long eventStopSeconds = null;
-        public Long eventStopNanos = null;
         public final boolean useSerializedDataColumns;
 
         public IngestionRequestParams(
@@ -104,13 +97,6 @@ public class IngestionTestBase {
                 List<String> columnNames,
                 IngestionDataType dataType,
                 List<List<Object>> values,
-                List<String> tags,
-                Map<String, String> attributes,
-                String eventDescription,
-                Long eventStartSeconds,
-                Long eventStartNanos,
-                Long eventStopSeconds,
-                Long eventStopNanos,
                 boolean useSerializedDataColumns
         ) {
 
@@ -130,14 +116,6 @@ public class IngestionTestBase {
                     values,
                     null,
                     useSerializedDataColumns);
-
-            this.tags = tags;
-            this.attributes = attributes;
-            this.eventDescription = eventDescription;
-            this.eventStartSeconds = eventStartSeconds;
-            this.eventStartNanos = eventStartNanos;
-            this.eventStopSeconds = eventStopSeconds;
-            this.eventStopNanos = eventStopNanos;
         }
     }
 
@@ -310,63 +288,8 @@ public class IngestionTestBase {
             // add regular DataColumns
             dataFrameBuilder.addAllDataColumns(frameColumns);
         }
-
-        // add tags if specified
-        if (params.tags != null) {
-            requestBuilder.addAllTags(params.tags);
-        }
-
-        // add attributes if specified
-        if (params.attributes != null) {
-            for (var attributeEntry : params.attributes.entrySet()) {
-                String attributeKey = attributeEntry.getKey();
-                String attributeValue = attributeEntry.getValue();
-                final Attribute.Builder attributeBuilder = Attribute.newBuilder();
-                attributeBuilder.setName(attributeKey);
-                attributeBuilder.setValue(attributeValue);
-                attributeBuilder.build();
-                requestBuilder.addAttributes(attributeBuilder);
-            }
-        }
-
-        // set event metadata if specified
-        if (params.eventDescription != null ||  params.eventStartSeconds != null || params.eventStartNanos != null) {
-
-            EventMetadata.Builder eventMetadataBuilder = EventMetadata.newBuilder();
-
-            if (params.eventDescription != null) {
-                eventMetadataBuilder.setDescription(params.eventDescription);
-            }
-
-            if (params.eventStartSeconds != null || params.eventStartNanos != null) {
-                Timestamp.Builder eventStartTimeBuilder = Timestamp.newBuilder();
-                if (params.eventStartSeconds != null) {
-                    eventStartTimeBuilder.setEpochSeconds(params.eventStartSeconds);
-                }
-                if (params.eventStartNanos != null) {
-                    eventStartTimeBuilder.setNanoseconds(params.eventStartNanos);
-                }
-                eventStartTimeBuilder.build();
-                eventMetadataBuilder.setStartTimestamp(eventStartTimeBuilder);
-            }
-
-            if (params.eventStopSeconds != null || params.eventStopNanos != null) {
-                Timestamp.Builder eventStopTimeBuilder = Timestamp.newBuilder();
-                if (params.eventStopSeconds != null) {
-                    eventStopTimeBuilder.setEpochSeconds(params.eventStopSeconds);
-                }
-                if (params.eventStopNanos != null) {
-                    eventStopTimeBuilder.setNanoseconds(params.eventStopNanos);
-                }
-                eventStopTimeBuilder.build();
-                eventMetadataBuilder.setStopTimestamp(eventStopTimeBuilder);
-            }
-
-            eventMetadataBuilder.build();
-            requestBuilder.setEventMetadata(eventMetadataBuilder);
-        }
-
         dataFrameBuilder.build();
+
         requestBuilder.setIngestionDataFrame(dataFrameBuilder);
         return requestBuilder.build();
     }

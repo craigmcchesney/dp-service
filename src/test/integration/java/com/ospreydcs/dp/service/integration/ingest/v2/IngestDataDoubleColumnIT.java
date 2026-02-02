@@ -63,12 +63,7 @@ public class IngestDataDoubleColumnIT extends GrpcIntegrationTestBase {
                             columnNames,
                             IngestionTestBase.IngestionDataType.ARRAY_DOUBLE,
                             null, // don't set any column values, we're going to override
-                            null, attributes,
-                            eventDescription,
-                            firstSeconds,
-                            firstNanos,
-                            null,
-                            null, false);
+                            false);
 
             // specify explicit DoubleColumn data
             List<DoubleColumn> doubleColumns = new ArrayList<>();

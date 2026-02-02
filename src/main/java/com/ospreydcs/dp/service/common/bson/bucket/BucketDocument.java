@@ -114,25 +114,6 @@ public class BucketDocument extends DpBsonDocumentBase {
         // embed requestDataTimesetampsDocument within each BucketDocument
         bucket.setDataTimestamps(requestDataTimestampsDocument);
 
-        // add tags
-        if ( ! request.getTagsList().isEmpty()) {
-            bucket.setTags(request.getTagsList());
-        }
-
-        // add attributes
-        if ( ! request.getAttributesList().isEmpty()) {
-            final Map<String, String> attributeMap =
-                    AttributesUtility.attributeMapFromList(request.getAttributesList());
-            bucket.setAttributes(attributeMap);
-        }
-
-        // create EventMetadataDocument for request EventMetadata
-        if (request.hasEventMetadata()) {
-            EventMetadataDocument eventMetadataDocument =
-                    EventMetadataDocument.fromEventMetadata(request.getEventMetadata());
-            bucket.setEvent(eventMetadataDocument);
-        }
-
         return bucket;
     }
 
