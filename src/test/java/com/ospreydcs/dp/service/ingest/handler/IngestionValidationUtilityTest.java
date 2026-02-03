@@ -95,7 +95,7 @@ public class IngestionValidationUtilityTest extends IngestionTestBase {
         assertTrue(result.isError);
         assertEquals(
                 result.msg,
-                "IngestDataRequest.ingestionDataFrame.dataTimestamps.value must specify SamplingClock or list of timestamps");
+                "ingestionDataFrame.dataTimestamps.samplingClock.count must be > 0, got: 0");
     }
 
     /**
@@ -124,7 +124,7 @@ public class IngestionValidationUtilityTest extends IngestionTestBase {
         IngestDataRequest request = buildIngestionRequest(params);
         ResultStatus result = IngestionValidationUtility.validateIngestionRequest(request);
         assertTrue(result.isError);
-        assertTrue(result.msg.equals("columns list cannot be empty"));
+        assertTrue(result.msg.equals("ingestionDataFrame must contain at least one column"));
     }
 
     /**
@@ -156,7 +156,7 @@ public class IngestionValidationUtilityTest extends IngestionTestBase {
         IngestDataRequest request = buildIngestionRequest(params);
         ResultStatus result = IngestionValidationUtility.validateIngestionRequest(request);
         assertTrue(result.isError);
-        assertTrue(result.msg.contains("mismatch numValues:"));
+        assertTrue(result.msg.contains("dataValues.length mismatch: expected 2, got: 1"));
     }
 
     /**
@@ -187,7 +187,7 @@ public class IngestionValidationUtilityTest extends IngestionTestBase {
         IngestDataRequest request = buildIngestionRequest(params);
         ResultStatus result = IngestionValidationUtility.validateIngestionRequest(request);
         assertTrue(result.isError);
-        assertTrue(result.msg.equals("name must be specified for all DataColumns"));
+        assertTrue(result.msg.equals("ingestionDataFrame.dataColumns[0].name must be specified"));
     }
 
 }

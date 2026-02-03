@@ -5,6 +5,7 @@ import com.ospreydcs.dp.grpc.v1.common.DataTimestamps;
 import com.ospreydcs.dp.grpc.v1.common.ExceptionalResult;
 import com.ospreydcs.dp.grpc.v1.common.SerializedDataColumn;
 import com.ospreydcs.dp.grpc.v1.ingestion.*;
+import com.ospreydcs.dp.grpc.v1.ingestion.IngestDataRequest.IngestionDataFrame;
 import com.ospreydcs.dp.service.common.protobuf.TimestampUtility;
 import com.ospreydcs.dp.service.common.model.ResultStatus;
 import com.ospreydcs.dp.service.ingest.handler.IngestionValidationUtility;
@@ -97,8 +98,23 @@ public class IngestionServiceImpl extends DpIngestionServiceGrpc.DpIngestionServ
 
         final int numRows = getNumRequestRows(request);
 
-        int numColumns = request.getIngestionDataFrame().getDataColumnsCount()
-                + request.getIngestionDataFrame().getSerializedDataColumnsCount();
+        IngestionDataFrame frame = request.getIngestionDataFrame();
+        int numColumns = frame.getDataColumnsCount()
+                + frame.getSerializedDataColumnsCount()
+                + frame.getDoubleColumnsCount()
+                + frame.getFloatColumnsCount()
+                + frame.getInt64ColumnsCount()
+                + frame.getInt32ColumnsCount()
+                + frame.getBoolColumnsCount()
+                + frame.getStringColumnsCount()
+                + frame.getEnumColumnsCount()
+                + frame.getImageColumnsCount()
+                + frame.getStructColumnsCount()
+                + frame.getDoubleArrayColumnsCount()
+                + frame.getFloatArrayColumnsCount()
+                + frame.getInt32ArrayColumnsCount()
+                + frame.getInt64ArrayColumnsCount()
+                + frame.getBoolArrayColumnsCount();
 
         final IngestDataResponse.AckResult ackResult = IngestDataResponse.AckResult.newBuilder()
                 .setNumRows(numRows)
