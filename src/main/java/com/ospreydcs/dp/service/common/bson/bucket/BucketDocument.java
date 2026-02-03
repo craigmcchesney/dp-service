@@ -190,30 +190,6 @@ public class BucketDocument extends DpBsonDocumentBase {
         DataColumn dataColumn = document.getDataColumn().toDataColumn();
         bucketBuilder.setDataColumn(dataColumn);
 
-        // add tags
-        if (document.getTags() != null) {
-            bucketBuilder.addAllTags(document.getTags());
-        }
-
-        // add attributes
-        if (document.getAttributes() != null) {
-            for (var documentAttributeMapEntry : document.getAttributes().entrySet()) {
-                final String documentAttributeKey = documentAttributeMapEntry.getKey();
-                final String documentAttributeValue = documentAttributeMapEntry.getValue();
-                final Attribute responseAttribute = Attribute.newBuilder()
-                        .setName(documentAttributeKey)
-                        .setValue(documentAttributeValue)
-                        .build();
-                bucketBuilder.addAttributes(responseAttribute);
-            }
-        }
-
-        // add event metadata
-        if (document.getEvent() != null) {
-            final EventMetadataDocument eventMetadataDocument = document.getEvent();
-            bucketBuilder.setEventMetadata(eventMetadataDocument.toEventMetadata());
-        }
-
         // add provider details
         if (document.getProviderId() != null) {
             bucketBuilder.setProviderId(document.getProviderId());
