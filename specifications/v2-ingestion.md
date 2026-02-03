@@ -165,3 +165,7 @@ For the array data types (DoubleArrayColumn, FloatArrayColumn, Int32ArrayColumn,
 3. Image encoding is defined external to the API because it varies by facility.  It is a contract between data producer and data consumer.  Just check that it is non-empty.
 4. It's not a bad idea to maintain separate validation paths for legacy DataColumn vs. the new types.  How do you propose to handle that?
 5. Yes please include field paths and values in error messages.
+
+### 1.1 Ingestion Validation Test Coverage
+
+Please add comprehensive test coverage for all failure scenarios and new proto column message data structures.
