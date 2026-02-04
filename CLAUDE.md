@@ -14,7 +14,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Architecture Overview
 This is a Data Platform service implementation with three main services:
-- **Ingestion Service**: Handles data ingestion with high-performance streaming APIs
+- **Ingestion Service**: Handles data ingestion with high-performance streaming APIs and comprehensive validation
 - **Query Service**: Provides time-series data retrieval and metadata queries 
 - **Annotation Service**: Manages data annotations, datasets, and data exports
 
@@ -42,7 +42,8 @@ When modifying gRPC APIs:
 1. Update protobuf files in `dp-grpc/src/main/proto/`
 2. Regenerate Java classes: `mvn clean compile` in dp-grpc
 3. Update service implementations in dp-service to match new protobuf signatures
-4. Follow systematic renaming pattern: Service → Handler → Jobs → Dispatchers → Tests
+4. Update validation logic in `IngestionValidationUtility` for new column types
+5. Follow systematic renaming pattern: Service → Handler → Jobs → Dispatchers → Tests
 
 ## MongoDB Collections
 - **buckets**: Time-series data storage (main data collection with embedded protobuf serialization)
@@ -106,6 +107,49 @@ Recent API evolution has moved from "create" to "save" semantics:
   - Uses Apache POI for Excel file processing
   - Expects format: `[seconds, nanos, pv_data_columns...]` with header row
 
+## Ingestion Validation Framework
+The ingestion service implements comprehensive validation for all column-oriented data structures to support high-frequency data ingestion (4000 PVs at 1 KHz) with proper memory management and data integrity.
+
+### Validation Architecture
+- **Location**: `com.ospreydcs.dp.service.ingest.handler.IngestionValidationUtility`
+- **Approach**: Layered validation with fail-fast error handling
+- **Error Messages**: Detailed field paths with expected vs actual values
+
+### Validation Layers
+1. **Basic Request Validation**: Provider ID, client request ID, frame presence
+2. **Timestamp Validation**: SamplingClock and TimestampList validation with ordering checks
+3. **Legacy Column Validation**: DataColumn and SerializedDataColumn backward compatibility
+4. **New Column Validation**: All column-oriented data structures
+5. **Cross-Cutting Validation**: Unique PV names across all column types
+
+### Supported Column Types
+**Scalar Columns**: DoubleColumn, FloatColumn, Int32Column, Int64Column, BoolColumn, StringColumn, EnumColumn
+**Array Columns**: DoubleArrayColumn, FloatArrayColumn, Int32ArrayColumn, Int64ArrayColumn, BoolArrayColumn
+**Complex Columns**: ImageColumn, StructColumn, SerializedDataColumn
+
+### Validation Constraints
+- **String Length**: 256 character maximum for StringColumn values
+- **Array Dimensions**: 1-3 dimensions maximum, all dimension values > 0
+- **Array Elements**: 10 million element maximum per array column
+- **Image Size**: 50MB maximum per image payload  
+- **Struct Size**: 1MB maximum per struct payload
+- **Timestamp Integrity**: Non-decreasing timestamps, valid nanosecond ranges (0-999,999,999)
+- **Sample Consistency**: All columns must have values matching timestamp count
+- **Unique PV Names**: No duplicate PV names across any column type in a single frame
+
+### Column Counting Logic
+Updated `IngestionServiceImpl.ingestionResponseAck()` to count all column types:
+```java
+int numColumns = frame.getDataColumnsCount() + frame.getSerializedDataColumnsCount()
+    + frame.getDoubleColumnsCount() + frame.getFloatColumnsCount() 
+    + frame.getInt64ColumnsCount() + frame.getInt32ColumnsCount()
+    + frame.getBoolColumnsCount() + frame.getStringColumnsCount()
+    + frame.getEnumColumnsCount() + frame.getImageColumnsCount()
+    + frame.getStructColumnsCount() + frame.getDoubleArrayColumnsCount()
+    + frame.getFloatArrayColumnsCount() + frame.getInt32ArrayColumnsCount()
+    + frame.getInt64ArrayColumnsCount() + frame.getBoolArrayColumnsCount();
+```
+
 ## Testing Strategy
 - **Framework**: JUnit 4 (imports `org.junit.*`, uses `@Test`, `@Before`, `@After`)
 - **Integration Tests**: Located in `src/test/java/com/ospreydcs/dp/service/integration/`
@@ -114,6 +158,14 @@ Recent API evolution has moved from "create" to "save" semantics:
 - **Scenario Methods**: Reusable test data generation (e.g., `simpleIngestionScenario()`, `createDataSetScenario()`)
 - **Test Naming**: Test classes typically named `<APIMethod>Test`
 - **Temporary Files**: Use `@Rule public TemporaryFolder tempFolder = new TemporaryFolder();` for test files
+
+### Ingestion Validation Test Coverage
+- **Test Location**: `IngestionValidationUtilityTest` (22 test cases)
+- **Legacy Validation**: Provider ID, request ID, DataColumn validation (6 tests)
+- **New Column Types**: DoubleColumn, StringColumn, EnumColumn, Array, Image, Struct validation (10 tests)  
+- **Advanced Scenarios**: Duplicate PV names, timestamp integrity, multi-column success cases (6 tests)
+- **Error Message Testing**: Validates detailed field paths and constraint violations
+- **Boundary Testing**: String length limits, array dimension limits, timestamp ordering
 
 ## Continuous Integration
 - **GitHub Actions**: Automated CI/CD pipeline in `.github/workflows/ci.yml`
