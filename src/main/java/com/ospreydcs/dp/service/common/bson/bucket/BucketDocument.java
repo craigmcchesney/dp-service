@@ -7,6 +7,7 @@ import com.ospreydcs.dp.service.common.bson.column.ColumnDocumentBase;
 import com.ospreydcs.dp.service.common.bson.column.DataColumnDocument;
 import com.ospreydcs.dp.service.common.bson.DataTimestampsDocument;
 import com.ospreydcs.dp.service.common.bson.DpBsonDocumentBase;
+import com.ospreydcs.dp.service.common.bson.column.DoubleColumnDocument;
 import com.ospreydcs.dp.service.common.exception.DpException;
 import com.ospreydcs.dp.service.ingest.model.DpIngestionException;
 
@@ -115,28 +116,6 @@ public class BucketDocument extends DpBsonDocumentBase {
         return bucket;
     }
 
-    private static BucketDocument dataColumnBucketDocument(
-            IngestDataRequest request,
-            DataColumn column,
-            String providerName
-    ) {
-        // create DataColumnDocument for request DataColumn
-        ColumnDocumentBase dataColumnDocument = DataColumnDocument.fromDataColumn(column);
-        final String pvName = column.getName();
-        return columnBucketDocument(pvName, request, dataColumnDocument, providerName);
-    }
-
-    private static BucketDocument serializedDataColumnBucketDocument(
-            IngestDataRequest request,
-            SerializedDataColumn column,
-            String providerName
-    ) {
-        // create DataColumnDocument for request DataColumn
-        DataColumnDocument dataColumnDocument = DataColumnDocument.fromSerializedDataColumn(column);
-        final String pvName = column.getName();
-        return columnBucketDocument(pvName, request, dataColumnDocument, providerName);
-    }
-
     /**
      * Generates a list of POJO objects, which are written as a batch to mongodb by customizing the codec registry.
      * <p>
@@ -154,13 +133,20 @@ public class BucketDocument extends DpBsonDocumentBase {
 
         // create BucketDocument for each DataColumn
         for (DataColumn column : request.getIngestionDataFrame().getDataColumnsList()) {
-            bucketList.add(dataColumnBucketDocument(request, column, providerName));
+            ColumnDocumentBase columnDocument = DataColumnDocument.fromDataColumn(column);
+            bucketList.add(columnBucketDocument(column.getName(), request, columnDocument, providerName));
         }
 
         // create BucketDocument for each SerializedDataColumn
-        for (SerializedDataColumn column :
-                request.getIngestionDataFrame().getSerializedDataColumnsList()) {
-            bucketList.add(serializedDataColumnBucketDocument(request, column, providerName));
+        for (SerializedDataColumn column : request.getIngestionDataFrame().getSerializedDataColumnsList()) {
+            ColumnDocumentBase columnDocument = DataColumnDocument.fromSerializedDataColumn(column);
+            bucketList.add(columnBucketDocument(column.getName(), request, columnDocument, providerName));
+        }
+
+        // create BucketDocument for each DoubleColumn
+        for (DoubleColumn column : request.getIngestionDataFrame().getDoubleColumnsList()) {
+            ColumnDocumentBase columnDocument = DoubleColumnDocument.fromDoubleColumn(column);
+            bucketList.add(columnBucketDocument(column.getName(), request, columnDocument, providerName));
         }
 
         return bucketList;

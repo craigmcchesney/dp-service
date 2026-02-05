@@ -8,6 +8,17 @@ import org.bson.codecs.pojo.annotations.BsonDiscriminator;
 @BsonDiscriminator
 public abstract class ColumnDocumentBase {
 
+    // instance variables
+    private String name;
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
     public abstract void addColumnToBucket(DataBucket.Builder bucketBuilder) throws DpException;
 
     // TODO: this is for the tabular query result mechanism.  It works, but may be a pain for subclasses to generate from their native data.

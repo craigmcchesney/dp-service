@@ -18,18 +18,9 @@ public class DataColumnDocument extends ColumnDocumentBase {
     private static final Logger logger = LogManager.getLogger();
 
     // instance variables
-    private String name;
     private int valueCase;
     private String valueType;
     private byte[] bytes = null;
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
 
     public int getValueCase() {
         return valueCase;
