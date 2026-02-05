@@ -5,7 +5,7 @@ import ch.systemsx.cisd.hdf5.IHDF5Reader;
 import com.ospreydcs.dp.grpc.v1.common.*;
 import com.ospreydcs.dp.service.annotation.AnnotationTestBase;
 import com.ospreydcs.dp.service.annotation.handler.mongo.export.DataExportHdf5File;
-import com.ospreydcs.dp.service.common.bson.DataColumnDocument;
+import com.ospreydcs.dp.service.common.bson.column.DataColumnDocument;
 import com.ospreydcs.dp.service.common.bson.DataTimestampsDocument;
 import com.ospreydcs.dp.service.common.bson.TimestampDocument;
 import com.ospreydcs.dp.service.common.bson.bucket.BucketDocument;

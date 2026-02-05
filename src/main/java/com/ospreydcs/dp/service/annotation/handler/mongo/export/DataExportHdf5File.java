@@ -3,7 +3,7 @@ package com.ospreydcs.dp.service.annotation.handler.mongo.export;
 import ch.systemsx.cisd.hdf5.HDF5Factory;
 import ch.systemsx.cisd.hdf5.IHDF5Writer;
 import com.ospreydcs.dp.grpc.v1.common.CalculationsSpec;
-import com.ospreydcs.dp.service.common.bson.DataColumnDocument;
+import com.ospreydcs.dp.service.common.bson.column.DataColumnDocument;
 import com.ospreydcs.dp.service.common.bson.bucket.BucketDocument;
 import com.ospreydcs.dp.service.common.bson.calculations.CalculationsDataFrameDocument;
 import com.ospreydcs.dp.service.common.bson.calculations.CalculationsDocument;
@@ -189,7 +189,10 @@ public class DataExportHdf5File implements BucketedDataExportFileInterface {
 
         // DataColumn serialized bytes
         Objects.requireNonNull(bucketDocument.getDataColumn());
+
+        // TODO: this will probably need help with the new ColumnDocumentBase hierarchy, e.g., does byte format make sense for all the subclasses?  How does the hdf5 user distinguish the type of the binary column payload?
         final byte[] dataColumnBytes = bucketDocument.getDataColumn().getBytes();
+
         Objects.requireNonNull(dataColumnBytes);
         final String columnDataPath = pvTimesSecondsNanosGroup + PATH_SEPARATOR + DATA_COLUMN_BYTES;
         writer.writeByteArray(columnDataPath, dataColumnBytes);

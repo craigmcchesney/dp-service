@@ -2,7 +2,7 @@ package com.ospreydcs.dp.service.common.utility;
 
 import com.mongodb.client.MongoCursor;
 import com.ospreydcs.dp.grpc.v1.common.*;
-import com.ospreydcs.dp.service.common.bson.DataColumnDocument;
+import com.ospreydcs.dp.service.common.bson.column.DataColumnDocument;
 import com.ospreydcs.dp.service.common.bson.bucket.BucketDocument;
 import com.ospreydcs.dp.service.common.bson.calculations.CalculationsDataFrameDocument;
 import com.ospreydcs.dp.service.common.bson.calculations.CalculationsDocument;
@@ -56,7 +56,10 @@ public class TabularDataUtility {
     ) throws DpException {
 
         final DataTimestamps bucketDataTimestamps = bucket.getDataTimestamps().toDataTimestamps();
+
+        // TODO: This will probably need help for the new ColumnDocumentBase hierarchy, can all the subclasses generate a DataColumn from the native representation?
         final DataColumn bucketColumn = bucket.getDataColumn().toDataColumn();
+
         return addColumnsToTable(
                 bucketDataTimestamps,
                 List.of(bucketColumn),

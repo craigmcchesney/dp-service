@@ -118,7 +118,7 @@ public class QueryRequestStatusIT extends GrpcIntegrationTestBase {
                             ExceptionalResult.ExceptionalResultStatus.RESULT_STATUS_REJECT,
                             exceptionalResult.getExceptionalResultStatus());
                     assertEquals(
-                            "name must be specified for all DataColumns",
+                            "ingestionDataFrame.dataColumns[0].name must be specified",
                             exceptionalResult.getMessage());
                 }
 

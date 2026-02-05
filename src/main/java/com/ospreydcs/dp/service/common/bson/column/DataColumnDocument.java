@@ -1,16 +1,18 @@
-package com.ospreydcs.dp.service.common.bson;
+package com.ospreydcs.dp.service.common.bson.column;
 
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
+import com.ospreydcs.dp.grpc.v1.common.DataBucket;
 import com.ospreydcs.dp.grpc.v1.common.DataColumn;
 import com.ospreydcs.dp.grpc.v1.common.DataValue;
 import com.ospreydcs.dp.grpc.v1.common.SerializedDataColumn;
-import com.ospreydcs.dp.grpc.v1.ingestion.IngestDataRequest;
 import com.ospreydcs.dp.service.common.exception.DpException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.bson.codecs.pojo.annotations.BsonDiscriminator;
 
-public class DataColumnDocument {
+@BsonDiscriminator(key = "_t", value = "dataColumn")
+public class DataColumnDocument extends ColumnDocumentBase {
 
     // static variables
     private static final Logger logger = LogManager.getLogger();
@@ -103,5 +105,11 @@ public class DataColumnDocument {
         }
         serializedDataColumnBuilder.setName(this.getName());
         return serializedDataColumnBuilder.build();
+    }
+
+    @Override
+    public void addColumnToBucket(DataBucket.Builder bucketBuilder) throws DpException {
+        DataColumn dataColumn = this.toDataColumn();
+        bucketBuilder.setDataColumn(dataColumn);
     }
 }

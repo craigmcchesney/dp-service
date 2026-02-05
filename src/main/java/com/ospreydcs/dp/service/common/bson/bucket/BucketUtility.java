@@ -1,12 +1,11 @@
 package com.ospreydcs.dp.service.common.bson.bucket;
 
 import com.ospreydcs.dp.grpc.v1.common.*;
-import com.ospreydcs.dp.service.common.bson.DataColumnDocument;
+import com.ospreydcs.dp.service.common.bson.column.DataColumnDocument;
 import com.ospreydcs.dp.service.common.bson.DataTimestampsDocument;
 import com.ospreydcs.dp.service.common.protobuf.TimestampUtility;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import static java.lang.Math.round;

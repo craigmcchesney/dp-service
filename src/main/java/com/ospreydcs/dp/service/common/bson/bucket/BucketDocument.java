@@ -3,17 +3,15 @@ package com.ospreydcs.dp.service.common.bson.bucket;
 import com.ospreydcs.dp.grpc.v1.common.*;
 import com.ospreydcs.dp.grpc.v1.ingestion.IngestDataRequest;
 import com.ospreydcs.dp.grpc.v1.query.QueryDataRequest;
-import com.ospreydcs.dp.service.common.bson.DataColumnDocument;
+import com.ospreydcs.dp.service.common.bson.column.ColumnDocumentBase;
+import com.ospreydcs.dp.service.common.bson.column.DataColumnDocument;
 import com.ospreydcs.dp.service.common.bson.DataTimestampsDocument;
 import com.ospreydcs.dp.service.common.bson.DpBsonDocumentBase;
-import com.ospreydcs.dp.service.common.bson.EventMetadataDocument;
 import com.ospreydcs.dp.service.common.exception.DpException;
-import com.ospreydcs.dp.service.common.protobuf.AttributesUtility;
 import com.ospreydcs.dp.service.ingest.model.DpIngestionException;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * This POJO is for writing time series data to mongodb by customizing the code registry.
@@ -25,7 +23,7 @@ public class BucketDocument extends DpBsonDocumentBase {
     // instance variables
     private String id;
     private String pvName;
-    private DataColumnDocument dataColumn;
+    private ColumnDocumentBase dataColumn;
     private DataTimestampsDocument dataTimestamps;
     private String providerId;
     private String providerName;
@@ -47,11 +45,11 @@ public class BucketDocument extends DpBsonDocumentBase {
         this.pvName = pvName;
     }
 
-    public DataColumnDocument getDataColumn() {
+    public ColumnDocumentBase getDataColumn() {
         return dataColumn;
     }
 
-    public void setDataColumn(DataColumnDocument dataColumn) {
+    public void setDataColumn(ColumnDocumentBase dataColumn) {
         this.dataColumn = dataColumn;
     }
 
@@ -90,7 +88,7 @@ public class BucketDocument extends DpBsonDocumentBase {
     private static BucketDocument columnBucketDocument(
             String pvName,
             IngestDataRequest request,
-            DataColumnDocument dataColumnDocument,
+            ColumnDocumentBase dataColumnDocument,
             String providerName
     ) {
         final BucketDocument bucket = new BucketDocument();
@@ -123,7 +121,7 @@ public class BucketDocument extends DpBsonDocumentBase {
             String providerName
     ) {
         // create DataColumnDocument for request DataColumn
-        DataColumnDocument dataColumnDocument = DataColumnDocument.fromDataColumn(column);
+        ColumnDocumentBase dataColumnDocument = DataColumnDocument.fromDataColumn(column);
         final String pvName = column.getName();
         return columnBucketDocument(pvName, request, dataColumnDocument, providerName);
     }
@@ -187,8 +185,7 @@ public class BucketDocument extends DpBsonDocumentBase {
 //            DataColumn dataColumn = document.getDataColumn().toDataColumn();
 //            bucketBuilder.setDataColumn(dataColumn);
 //        }
-        DataColumn dataColumn = document.getDataColumn().toDataColumn();
-        bucketBuilder.setDataColumn(dataColumn);
+        document.getDataColumn().addColumnToBucket(bucketBuilder);
 
         // add provider details
         if (document.getProviderId() != null) {

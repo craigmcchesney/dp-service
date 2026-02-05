@@ -1,7 +1,7 @@
 package com.ospreydcs.dp.service.common.bson.calculations;
 
 import com.ospreydcs.dp.grpc.v1.annotation.Calculations;
-import com.ospreydcs.dp.service.common.bson.DataColumnDocument;
+import com.ospreydcs.dp.service.common.bson.column.DataColumnDocument;
 import com.ospreydcs.dp.service.common.bson.DpBsonDocumentBase;
 import com.ospreydcs.dp.service.common.exception.DpException;
 import org.bson.types.ObjectId;
