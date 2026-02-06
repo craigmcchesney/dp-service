@@ -2,6 +2,7 @@ package com.ospreydcs.dp.service.ingest.utility;
 
 import com.ospreydcs.dp.service.common.config.ConfigurationManager;
 import com.ospreydcs.dp.service.ingest.benchmark.BenchmarkIngestDataBidiStream;
+import com.ospreydcs.dp.service.ingest.benchmark.ColumnDataType;
 import io.grpc.Grpc;
 import io.grpc.InsecureChannelCredentials;
 import io.grpc.ManagedChannel;
@@ -53,7 +54,7 @@ public class TestDataGenerator extends BenchmarkIngestDataBidiStream {
                 numRows,
                 numColumns,
                 numSeconds,
-                generateTimestampListRequests, false);
+                generateTimestampListRequests, ColumnDataType.DATA_COLUMN);
 
         try {
             boolean awaitSuccess = channel.shutdownNow().awaitTermination(TERMINATION_TIMEOUT_MINUTES, TimeUnit.SECONDS);

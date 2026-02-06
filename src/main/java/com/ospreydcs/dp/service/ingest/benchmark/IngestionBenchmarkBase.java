@@ -47,7 +47,7 @@ public abstract class IngestionBenchmarkBase {
         final public int lastColumnIndex;
         final public String providerId;
         final public boolean useTimestampList;
-        final public boolean useSerializedDataColumns;
+        final public ColumnDataType columnDataType;
 
         public IngestionTaskParams(
                 long startSeconds,
@@ -59,7 +59,7 @@ public abstract class IngestionBenchmarkBase {
                 int lastColumnIndex,
                 String providerId,
                 boolean useTimestampList,
-                boolean useSerializedDataColumns
+                ColumnDataType columnDataType
         ) {
             this.startSeconds = startSeconds;
             this.streamNumber = streamNumber;
@@ -70,7 +70,16 @@ public abstract class IngestionBenchmarkBase {
             this.lastColumnIndex = lastColumnIndex;
             this.providerId = providerId;
             this.useTimestampList = useTimestampList;
-            this.useSerializedDataColumns = useSerializedDataColumns;
+            this.columnDataType = columnDataType;
+        }
+
+        /**
+         * Legacy compatibility method - returns true if using SerializedDataColumn.
+         * @deprecated Use columnDataType field directly
+         */
+        @Deprecated
+        public boolean useSerializedDataColumns() {
+            return columnDataType == ColumnDataType.SERIALIZED_DATA_COLUMN;
         }
     }
 
@@ -162,49 +171,34 @@ public abstract class IngestionBenchmarkBase {
     }
 
     /**
-     * Generates IngestionRequest API object for specified parameters.
+     * Factory method to create the appropriate ColumnBuilder for the specified column data type.
      *
-     * @param params
-     * @return
+     * @param columnDataType The type of column builder to create
+     * @return ColumnBuilder instance for the specified type
+     */
+    private static ColumnBuilder createColumnBuilder(ColumnDataType columnDataType) {
+        return switch (columnDataType) {
+            case DATA_COLUMN -> new DataColumnBuilder();
+            case DOUBLE_COLUMN -> new DoubleColumnBuilder();
+            case SERIALIZED_DATA_COLUMN -> new SerializedDataColumnBuilder();
+        };
+    }
+
+    /**
+     * Generates IngestionDataFrame builder using the strategy pattern for different column types.
+     *
+     * @param params Benchmark task parameters including column data type
+     * @return IngestionDataFrame builder with columns added using the appropriate strategy
      */
     private static IngestDataRequest.IngestionDataFrame.Builder buildDataTableTemplate(IngestionTaskParams params) {
-
         IngestDataRequest.IngestionDataFrame.Builder ingestionDataFrameBuilder =
                 IngestDataRequest.IngestionDataFrame.newBuilder();
 
-        // build list of Data objects (columns), each a list of Datum objects (cell values)
-        final List<DataColumn> dataColumnList = new ArrayList<>();
-        final List<SerializedDataColumn> serializedDataColumnList = new ArrayList<>();
-        for (int colIndex = params.firstColumnIndex; colIndex <= params.lastColumnIndex ; colIndex++) {
-            DataColumn.Builder dataColumnBuilder = DataColumn.newBuilder();
-            dataColumnBuilder.setName(NAME_COLUMN_BASE + colIndex);
-            for (int rowIndex = 0 ; rowIndex < params.numRows ; rowIndex++) {
-                double cellValue = rowIndex + (double) rowIndex /params.numRows;
-                DataValue dataValue = DataValue.newBuilder().setDoubleValue(cellValue).build();
-                dataColumnBuilder.addDataValues(dataValue);
-//                // use this commented code to look at serialized size of double data
-//                int datumSize = rowDatum.getSerializedSize();
-//                LOGGER.info("serialized double size: {}", datumSize);
-            }
-            DataColumn dataColumn = dataColumnBuilder.build();
-            if (params.useSerializedDataColumns) {
-                final SerializedDataColumn serializedDataColumn =
-                        SerializedDataColumn.newBuilder()
-                                .setName(dataColumn.getName())
-                                .setPayload(dataColumn.toByteString())
-                                .build();
-                serializedDataColumnList.add(serializedDataColumn);
-            } else {
-                dataColumnList.add(dataColumn);
-            }
-        }
+        // Use strategy pattern to build columns based on the specified type
+        ColumnBuilder columnBuilder = createColumnBuilder(params.columnDataType);
+        columnBuilder.buildColumns(ingestionDataFrameBuilder, params);
 
-        if (params.useSerializedDataColumns) {
-            ingestionDataFrameBuilder.addAllSerializedDataColumns(serializedDataColumnList);
-        } else {
-            ingestionDataFrameBuilder.addAllDataColumns(dataColumnList);
-        }
-
+        logger.trace("Built data table template using {}", columnBuilder.getColumnTypeName());
         return ingestionDataFrameBuilder;
     }
 
@@ -460,7 +454,7 @@ public abstract class IngestionBenchmarkBase {
             int numColumns,
             int numSeconds,
             boolean generateTimestampListRequests,
-            boolean useSerializedDataColumns
+            ColumnDataType columnDataType
     ) {
         boolean success = true;
         long dataValuesSubmitted = 0;
@@ -509,7 +503,7 @@ public abstract class IngestionBenchmarkBase {
                     lastColumnIndex,
                     providerId,
                     useTimestampList,
-                    useSerializedDataColumns);
+                    columnDataType);
             IngestDataRequest.IngestionDataFrame.Builder templateDataTable = buildDataTableTemplate(params);
             IngestionTask task = newIngestionTask(params, templateDataTable, channel);
             taskList.add(task);
@@ -583,7 +577,7 @@ public abstract class IngestionBenchmarkBase {
         }
     }
 
-    protected void ingestionExperiment(Channel channel, boolean useSerializedDataColumns) {
+    protected void ingestionExperiment(Channel channel, ColumnDataType columnDataType) {
 
         // number of PVS, sampling rate, length of run time
         // one minute of data at 4000 PVs x 1000 samples per second for 60 seconds
@@ -622,7 +616,7 @@ public abstract class IngestionBenchmarkBase {
                                 numColumns,
                                 numSeconds,
                                 false,
-                                useSerializedDataColumns);
+                                columnDataType);
                 if (scenarioResult.success) {
                     writeRateMap.put(mapKey, scenarioResult.valuesPerSecond);
                 } else {
@@ -655,14 +649,14 @@ public abstract class IngestionBenchmarkBase {
         System.out.println("min write rate: " + minRate);
     }
 
-    public static void runBenchmark(IngestionBenchmarkBase benchmark, boolean useSerializedDataColumns) {
+    public static void runBenchmark(IngestionBenchmarkBase benchmark, ColumnDataType columnDataType) {
 
         final String connectString = configMgr().getConfigString(CFG_KEY_GRPC_CONNECT_STRING, DEFAULT_GRPC_CONNECT_STRING);
         logger.info("Creating gRPC channel using connect string: {}", connectString);
         final ManagedChannel channel =
                 Grpc.newChannelBuilder(connectString, InsecureChannelCredentials.create()).build();
 
-        benchmark.ingestionExperiment(channel, useSerializedDataColumns);
+        benchmark.ingestionExperiment(channel, columnDataType);
 
         try {
             boolean awaitSuccess = channel.shutdownNow().awaitTermination(TERMINATION_TIMEOUT_MINUTES, TimeUnit.SECONDS);

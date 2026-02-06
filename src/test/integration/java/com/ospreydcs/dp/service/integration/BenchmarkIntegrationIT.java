@@ -18,6 +18,7 @@ import com.ospreydcs.dp.service.common.bson.EventMetadataDocument;
 import com.ospreydcs.dp.service.common.exception.DpException;
 import com.ospreydcs.dp.service.common.model.BenchmarkScenarioResult;
 import com.ospreydcs.dp.service.ingest.benchmark.BenchmarkIngestDataBidiStream;
+import com.ospreydcs.dp.service.ingest.benchmark.ColumnDataType;
 import com.ospreydcs.dp.service.ingest.benchmark.IngestionBenchmarkBase;
 import com.ospreydcs.dp.service.query.QueryTestBase;
 import com.ospreydcs.dp.service.query.benchmark.*;
@@ -286,7 +287,8 @@ public class BenchmarkIntegrationIT extends GrpcIntegrationTestBase {
                     INGESTION_NUM_ROWS,
                     numColumnsPerStream,
                     INGESTION_NUM_SECONDS,
-                    false, false);
+                    false,
+                    ColumnDataType.DATA_COLUMN);
             assertTrue(scenarioResult.success);
 
             System.out.println("========== ingestion scenario completed ==========");

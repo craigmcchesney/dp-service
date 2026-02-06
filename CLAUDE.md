@@ -150,6 +150,59 @@ int numColumns = frame.getDataColumnsCount() + frame.getSerializedDataColumnsCou
     + frame.getInt64ArrayColumnsCount() + frame.getBoolArrayColumnsCount();
 ```
 
+## Performance Benchmarking Framework
+The ingestion service includes a sophisticated benchmarking framework for performance comparison between different column-oriented data structures, particularly for high-frequency scenarios (4000 PVs at 1 KHz).
+
+### Benchmark Architecture
+- **Base Class**: `IngestionBenchmarkBase` provides common infrastructure
+- **Strategy Pattern**: `ColumnBuilder` interface with implementation-specific builders
+- **Factory Method**: `getColumnBuilder()` creates appropriate builder based on `ColumnDataType`
+- **Threading**: Configurable multi-threaded execution with executor service pools
+
+### Available Benchmarks
+- **`BenchmarkIngestDataStream`**: Unidirectional streaming ingestion performance
+- **`BenchmarkIngestDataBidiStream`**: Bidirectional streaming ingestion performance  
+- **`BenchmarkIngestDataStreamBytes`**: Specialized streaming for serialized data
+
+### Column Data Types
+- **`DATA_COLUMN`**: Legacy sample-oriented DataColumn/DataValue structure (default)
+- **`DOUBLE_COLUMN`**: New column-oriented DoubleColumn with packed double arrays
+- **`SERIALIZED_DATA_COLUMN`**: SerializedDataColumn structure for custom serialization
+
+### Column Builders
+- **`DataColumnBuilder`**: Creates legacy DataColumn structures with individual DataValue objects per sample
+- **`DoubleColumnBuilder`**: Creates efficient DoubleColumn with packed double arrays (avoids per-sample allocation)
+- **`SerializedDataColumnBuilder`**: Creates SerializedDataColumn with custom serialized payload
+
+### Usage Examples
+```bash
+# Run benchmark with legacy DataColumn structure (default)
+java -cp target/dp-service-shaded.jar com.ospreydcs.dp.service.ingest.benchmark.BenchmarkIngestDataStream
+
+# Run benchmark with new efficient DoubleColumn structure
+java -cp target/dp-service-shaded.jar com.ospreydcs.dp.service.ingest.benchmark.BenchmarkIngestDataStream --double-column
+
+# Run benchmark with SerializedDataColumn structure
+java -cp target/dp-service-shaded.jar com.ospreydcs.dp.service.ingest.benchmark.BenchmarkIngestDataStream --serialized-column
+
+# Display usage help
+java -cp target/dp-service-shaded.jar com.ospreydcs.dp.service.ingest.benchmark.BenchmarkIngestDataStream --help
+```
+
+### Performance Comparison
+The framework enables direct memory allocation and throughput comparison:
+- **Legacy DataColumn**: Creates individual DataValue objects for each sample (high memory allocation)
+- **New DoubleColumn**: Uses packed double arrays (minimal allocation, better cache locality)
+- **Memory Impact**: At 4000 PVs × 1000 samples/sec, DataColumn creates 4M objects/sec vs DoubleColumn's 4K arrays/sec
+
+### Benchmark Configuration
+Key parameters configured in benchmark classes:
+- **`numThreads`**: Executor service thread pool size (typically 7)
+- **`numStreams`**: Concurrent gRPC streams (typically 20)  
+- **`numRows`**: Samples per ingestion request (typically 1000)
+- **`numColumns`**: PVs per stream (typically 200, total 4000 PVs)
+- **`numSeconds`**: Duration of benchmark run (typically 60 seconds)
+
 ## Testing Strategy
 - **Framework**: JUnit 4 (imports `org.junit.*`, uses `@Test`, `@Before`, `@After`)
 - **Integration Tests**: Located in `src/test/java/com/ospreydcs/dp/service/integration/`

@@ -169,3 +169,27 @@ For the array data types (DoubleArrayColumn, FloatArrayColumn, Int32ArrayColumn,
 ### 1.1 Ingestion Validation Test Coverage
 
 Please add comprehensive test coverage for all failure scenarios and new proto column message data structures.
+
+## 2.0 Ingestion Performance Benchmark
+
+I've added a framework to the Ingestion Service handler that reflects the new column-oriented data structures in the gRPC ingestion API in writing BucketDocuments to MongoDB for each column contained in an IngestDataRequest's IngestionDataFrame.  The BucketDocuments now include an embedded document with the sample data values for the corresponding request column.  There is a Java POJO class hierarchy for the embedded column documents, ColumnDocumentBase, with a derived class DoubleColumnDocument to serve as the embedded column document when creating a BucketDocument for a protobuf DoubleColumn message.  I also refactored the existing code to make the previously existing DataColumnDocument extend ColumnDocumentBase.  A BucketDocument containing a DataColumnDocument is created when the ingestion request data frame includes a DataColumn protobuf message.  I will add classes to the ColumnDocumentBase hierarchy to support the other protobuf column messages as a follow on task.
+
+Before I move forward with handling the other protobuf column messages, I want to make a benchmark for comparing the performance of ingestion using the DataColumn / DataValue protobuf messages (with double sample data values) from the original implementation with ingestion using the new DoubleColumn protobuf message.
+
+There is already an ingestion performance benchmark framework for measuring the performance of ingestion using DataColumn / DataValue protobuf messages.  There are 3 variant ingestion benchmark applications that extend IngestionBenchmarkBase - BenchmarkIngestDataStream, BenchmarkIngestDataBidiStream, and BenchmarkIngestDataStreamBytes that cover the ingestDataStream(), ingestDataBidiStream(), and ingestDataStream() with SerializedDataColumns, respectively.
+
+Please investigate and give me an overview of what would be required to refactor the framework so that we can pass a flag from BenchmarkIngestDataBidiStream.main() and BenchmarkIngestDataStream.main() that tells the framework to build IngestDataRequests whose IngestionDataFrame uses DoubleColumn protobuf objects instead of DataColumn / DataValue objects.  We don't want to change any code yet, just give me an approach.
+
+It looks like one idea might be to refactor BenchmarkIngestDataBidiStream and BenchmarkIngestDataStream to be intermediate base classes, each with 2 derived classes that define a main method that uses either DataColumn ingestion or DoubleColumn ingestion.  But if you have better ideas let me know.
+
+### 2.1 Benchmark Refactoring Using Strategy Pattern and Factory Method
+
+I agree with your recommendation in option 1 to use the strategy pattern and factory method.  Please proceed with the suggested implementation steps:
+
+1. Create ColumnDataType enum and ColumnBuilder interface
+2. Implement DataColumnBuilder (extract existing logic)
+3. Implement DoubleColumnBuilder (new logic for DoubleColumn)
+4. Update IngestionTaskParams to include ColumnDataType
+5. Refactor buildDataTableTemplate() to use strategy pattern
+6. Update benchmark main() methods to parse column type from args
+7. Add new DoubleColumnBuilder implementation:

@@ -77,7 +77,7 @@ public class IngestDataDoubleColumnIT extends GrpcIntegrationTestBase {
                     IngestionTestBase.buildIngestionRequest(params, null, doubleColumns);
 
             // send request and examine response
-            //ingestionServiceWrapper.sendAndVerifyIngestData(params, request, 0);
+            // ingestionServiceWrapper.sendAndVerifyIngestData(params, request, 0);
         }
     }
 

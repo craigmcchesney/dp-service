@@ -137,7 +137,27 @@ public class BenchmarkIngestDataStream extends IngestionBenchmarkBase {
 
     public static void main(final String[] args) {
         BenchmarkIngestDataStream benchmark = new BenchmarkIngestDataStream();
-        runBenchmark(benchmark, false);
+        
+        // Parse command line argument for column data type
+        ColumnDataType columnDataType = ColumnDataType.DATA_COLUMN; // Default to legacy DataColumn
+        
+        if (args.length > 0) {
+            switch (args[0].toLowerCase()) {
+                case "--double-column" -> columnDataType = ColumnDataType.DOUBLE_COLUMN;
+                case "--serialized-column" -> columnDataType = ColumnDataType.SERIALIZED_DATA_COLUMN;
+                case "--data-column" -> columnDataType = ColumnDataType.DATA_COLUMN;
+                default -> {
+                    System.err.println("Usage: BenchmarkIngestDataStream [--data-column|--double-column|--serialized-column]");
+                    System.err.println("  --data-column      Use legacy DataColumn/DataValue structure (default)");
+                    System.err.println("  --double-column    Use new efficient DoubleColumn structure");
+                    System.err.println("  --serialized-column Use SerializedDataColumn structure");
+                    System.exit(1);
+                }
+            }
+        }
+        
+        System.out.println("Running BenchmarkIngestDataStream with " + columnDataType);
+        runBenchmark(benchmark, columnDataType);
     }
 
 }

@@ -75,7 +75,7 @@ IngestionHandler:
 IngestionBenchmark:
 
   # IngestionBenchmark.grpcConnectString: String used for gRPC connection to Ingestion Service including "host:port".
-  grpcConnectString: "${DP_INGESTION_BENCHMARK_GRPC_CONNECT_STRING:localhost:50051}"
+  grpcConnectString: "${DP_INGESTION_BENCHMARK_GRPC_CONNECT_STRING:localhost:60051}"
 
   # IngestionBenchmark.startSeconds: Specifies fixed start time for data created by Ingestion benchmark application.
   startSeconds: ${DP_INGESTION_BENCHMARK_START_SECONDS:1698767462}
