@@ -193,3 +193,9 @@ I agree with your recommendation in option 1 to use the strategy pattern and fac
 5. Refactor buildDataTableTemplate() to use strategy pattern
 6. Update benchmark main() methods to parse column type from args
 7. Add new DoubleColumnBuilder implementation:
+
+## 3.0 Parameterized Intermediate Base Class for Scalar Columns
+
+Please design a generic intermediate base class extending ColumnDocumentBase, "ScalarColumnDocumentBase", with a parameter for the scalar object type contained by the column.  For example, we will change the new DoubleColumnDocument to extend ScalarColumnBase and the type parameter will be "Double".  Move the "values" instance variable up from DoubleColumnDocument to the new base class and make the List of values use the parameter type as the List type.  Consider moving other methods up to the base class if their implementation is generic, or could be generic.  Don't change any code yet, just propose a design and please feel free to make suggestions for improvement to the approach.
+
+The relevant proto column data structure messages are DoubleColumn, FloatColumn, Int64Column, Int32Column, BoolColumn, StringColumn, and EnumColumn.

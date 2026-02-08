@@ -60,6 +60,77 @@ MongoDB documents use embedded protobuf serialization:
 - `DataSetDocument` contains embedded `DataBlockDocument` list
 - Protobuf objects serialized to `bytes` field, with convenience fields for queries
 
+### Column Document Class Hierarchy
+The ingestion service uses a sophisticated class hierarchy for MongoDB column document storage:
+
+**Base Classes:**
+- **`ColumnDocumentBase`**: Abstract base with `name` field and methods for protobuf/MongoDB conversion
+- **`ScalarColumnDocumentBase<T>`**: Generic intermediate class for scalar column types
+
+**Scalar Column Implementation Pattern:**
+```java
+@BsonDiscriminator(key = "_t", value = "columnType")
+public class TypeColumnDocument extends ScalarColumnDocumentBase<JavaType> {
+    
+    // Static factory method
+    public static TypeColumnDocument fromTypeColumn(TypeColumn requestColumn) {
+        TypeColumnDocument document = new TypeColumnDocument();
+        document.setName(requestColumn.getName());
+        document.setValues(requestColumn.getValuesList());
+        return document;
+    }
+    
+    // Protobuf builder creation
+    @Override
+    protected Message.Builder createColumnBuilder() {
+        return TypeColumn.newBuilder();
+    }
+    
+    // Add values to protobuf builder
+    @Override
+    protected void addAllValuesToBuilder(Message.Builder builder, List<JavaType> values) {
+        ((TypeColumn.Builder) builder).addAllValues(values);
+    }
+    
+    // Convert scalar to DataValue for legacy compatibility
+    @Override
+    protected DataValue createDataValueFromScalar(JavaType value) {
+        return DataValue.newBuilder().setTypeValue(value).build();
+    }
+    
+    // Add column to DataBucket for ingestion response
+    @Override
+    public void addColumnToBucket(DataBucket.Builder bucketBuilder) throws DpException {
+        TypeColumn column = (TypeColumn) toProtobufColumn();
+        bucketBuilder.setTypeColumn(column);
+    }
+}
+```
+
+**Scalar Column Type Mappings:**
+| Proto Message | Java Generic Type | Document Class | BSON Discriminator |
+|--------------|------------------|----------------|-------------------|
+| DoubleColumn | `ScalarColumnDocumentBase<Double>` | DoubleColumnDocument | "doubleColumn" |
+| FloatColumn | `ScalarColumnDocumentBase<Float>` | FloatColumnDocument | "floatColumn" |
+| Int64Column | `ScalarColumnDocumentBase<Long>` | Int64ColumnDocument | "int64Column" |
+| Int32Column | `ScalarColumnDocumentBase<Integer>` | Int32ColumnDocument | "int32Column" |
+| BoolColumn | `ScalarColumnDocumentBase<Boolean>` | BoolColumnDocument | "boolColumn" |
+| StringColumn | `ScalarColumnDocumentBase<String>` | StringColumnDocument | "stringColumn" |
+| EnumColumn | `ScalarColumnDocumentBase<Integer>` | EnumColumnDocument | "enumColumn" |
+
+**Benefits of Generic Base Class:**
+- **Code Reuse**: `List<T> values` field and common methods inherited from base
+- **Type Safety**: Compile-time type checking with generic parameter `<T>`
+- **Consistent API**: All scalar columns follow same conversion patterns
+- **Memory Efficiency**: Maintains column-oriented storage for high-frequency ingestion
+- **Legacy Compatibility**: Generic `toDataColumn()` converts to sample-oriented DataColumn
+
+**Inherited Methods from ScalarColumnDocumentBase:**
+- `getValues()` / `setValues()` - Generic value list accessors
+- `toDataColumn()` - Converts to legacy DataColumn with DataValue objects
+- `getBytes()` - Serializes protobuf column to byte array
+- `toProtobufColumn()` - Template method for creating typed protobuf column
+
 ## Export Framework Architecture
 The Annotation Service includes a sophisticated export framework:
 - **Base Classes**: `ExportDataJobBase` → `ExportDataJobAbstractTabular` → format-specific jobs
