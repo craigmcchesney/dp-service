@@ -36,7 +36,9 @@ public abstract class ScalarColumnDocumentBase<T> extends ColumnDocumentBase {
 
     private void setBuilderName(Message.Builder builder, String name) {
         try {
-            builder.getClass().getMethod("setName", String.class).invoke(builder, name);
+            // Handle null names by using empty string
+            String safeName = (name != null) ? name : "";
+            builder.getClass().getMethod("setName", String.class).invoke(builder, safeName);
         } catch (Exception e) {
             throw new RuntimeException("Failed to set name on column builder", e);
         }

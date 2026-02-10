@@ -291,6 +291,32 @@ Key parameters configured in benchmark classes:
 - **Error Message Testing**: Validates detailed field paths and constraint violations
 - **Boundary Testing**: String length limits, array dimension limits, timestamp ordering
 
+### Scalar Column Document Test Coverage
+- **Unit Tests**: `ScalarColumnDocumentBaseTest` - Basic functionality of generic base class
+- **Protobuf Conversion Tests**: `ScalarColumnDocumentBaseProtobufTest` (7 test cases)
+- **Integration Tests**: `IngestDataDoubleColumnIT` - End-to-end DoubleColumn ingestion pipeline
+
+**ScalarColumnDocumentBaseProtobufTest Coverage:**
+- **Core Functionality**: Document → protobuf conversion via `toProtobufColumn()`
+- **Round-trip Integrity**: Protobuf → document → protobuf data integrity
+- **Legacy Compatibility**: DataColumn conversion using inherited methods
+- **Serialization**: Byte array serialization through `getBytes()`
+- **Edge Cases**: Empty values, null names, large datasets (1000+ values)
+- **Error Handling**: Null name handling with safe fallback to empty string
+
+**Critical for Query/Export Pipeline:**
+The `toProtobufColumn()` method is essential for:
+- Tabular query results (MongoDB → protobuf API responses)
+- CSV export (document → protobuf → tabular assembly)
+- Excel export (document → protobuf → XLSX generation)  
+- HDF5 export (document → protobuf → HDF5 file creation)
+
+**Testing Strategy Benefits:**
+- **Direct Coverage**: Tests core conversion logic without full query/export complexity
+- **Fast Execution**: Unit tests vs slow integration test pipelines
+- **Comprehensive**: All scalar column types use same base class logic
+- **Template Pattern**: Same test structure applies to all ScalarColumnDocumentBase implementations
+
 ## Continuous Integration
 - **GitHub Actions**: Automated CI/CD pipeline in `.github/workflows/ci.yml`
 - **Multi-Repository Setup**: Automatically builds dp-grpc dependency before testing dp-service
