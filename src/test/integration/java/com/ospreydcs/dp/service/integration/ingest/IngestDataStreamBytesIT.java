@@ -52,8 +52,6 @@ public class IngestDataStreamBytesIT extends GrpcIntegrationTestBase {
                                 requestId,
                                 null,
                                 null,
-                                null,
-                                null,
                                 instantNow.getEpochSecond(),
                                 0L,
                                 1_000_000L,
@@ -62,7 +60,7 @@ public class IngestDataStreamBytesIT extends GrpcIntegrationTestBase {
                                 IngestionTestBase.IngestionDataType.DOUBLE,
                                 values,
                                 null,
-                                true);
+                                true, null, null);
                 final IngestDataRequest request = IngestionTestBase.buildIngestionRequest(params);
                 paramsList.add(params);
                 requestList.add(request);
@@ -80,8 +78,6 @@ public class IngestDataStreamBytesIT extends GrpcIntegrationTestBase {
                                 requestId,
                                 null,
                                 null,
-                                null,
-                                null,
                                 instantNow.getEpochSecond(),
                                 0L,
                                 1_000_000L,
@@ -90,7 +86,7 @@ public class IngestDataStreamBytesIT extends GrpcIntegrationTestBase {
                                 IngestionTestBase.IngestionDataType.DOUBLE,
                                 values,
                                 null,
-                                true);
+                                true, null, null);
                 final IngestDataRequest request = IngestionTestBase.buildIngestionRequest(params);
                 paramsList.add(params);
                 requestList.add(request);

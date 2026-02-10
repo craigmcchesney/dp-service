@@ -29,15 +29,13 @@ public class IngestionValidationUtilityTest extends IngestionTestBase {
                         requestId,
                         null,
                         null,
-                        null,
-                        null,
                         instantNow.getEpochSecond(),
                         0L,
                         1_000_000L,
                         1,
                         columnNames,
                         IngestionDataType.DOUBLE,
-                        values, null, false);
+                        values, null, false, null, null);
         IngestDataRequest request = buildIngestionRequest(params);
         ResultStatus result = IngestionValidationUtility.validateIngestionRequest(request);
         assertTrue(result.isError);
@@ -56,15 +54,13 @@ public class IngestionValidationUtilityTest extends IngestionTestBase {
                         null,
                         null,
                         null,
-                        null,
-                        null,
                         instantNow.getEpochSecond(),
                         0L,
                         1_000_000L,
                         1,
                         columnNames,
                         IngestionDataType.DOUBLE,
-                        values, null, false);
+                        values, null, false, null, null);
         IngestDataRequest request = buildIngestionRequest(params);
         ResultStatus result = IngestionValidationUtility.validateIngestionRequest(request);
         assertTrue(result.isError);
@@ -84,15 +80,13 @@ public class IngestionValidationUtilityTest extends IngestionTestBase {
                         requestId,
                         null,
                         null,
-                        null,
-                        null,
                         instantNow.getEpochSecond(),
                         0L,
                         1_000_000L,
                         0,
                         columnNames,
                         IngestionDataType.DOUBLE,
-                        values, null, false);
+                        values, null, false, null, null);
         IngestDataRequest request = buildIngestionRequest(params);
         ResultStatus result = IngestionValidationUtility.validateIngestionRequest(request);
         assertTrue(result.isError);
@@ -115,15 +109,13 @@ public class IngestionValidationUtilityTest extends IngestionTestBase {
                         requestId,
                         null,
                         null,
-                        null,
-                        null,
                         instantNow.getEpochSecond(),
                         0L,
                         1_000_000L,
                         2,
                         null,
                         IngestionDataType.DOUBLE,
-                        null, null, false);
+                        null, null, false, null, null);
         IngestDataRequest request = buildIngestionRequest(params);
         ResultStatus result = IngestionValidationUtility.validateIngestionRequest(request);
         assertTrue(result.isError);
@@ -147,15 +139,13 @@ public class IngestionValidationUtilityTest extends IngestionTestBase {
                         requestId,
                         null,
                         null,
-                        null,
-                        null,
                         instantNow.getEpochSecond(),
                         0L,
                         1_000_000L,
                         2,
                         columnNames,
                         IngestionDataType.DOUBLE,
-                        values, null, false);
+                        values, null, false, null, null);
         IngestDataRequest request = buildIngestionRequest(params);
         ResultStatus result = IngestionValidationUtility.validateIngestionRequest(request);
         assertTrue(result.isError);
@@ -178,15 +168,13 @@ public class IngestionValidationUtilityTest extends IngestionTestBase {
                         requestId,
                         null,
                         null,
-                        null,
-                        null,
                         instantNow.getEpochSecond(),
                         0L,
                         1_000_000L,
                         2,
                         columnNames,
                         IngestionDataType.DOUBLE,
-                        values, null, false);
+                        values, null, false, null, null);
         IngestDataRequest request = buildIngestionRequest(params);
         ResultStatus result = IngestionValidationUtility.validateIngestionRequest(request);
         assertTrue(result.isError);

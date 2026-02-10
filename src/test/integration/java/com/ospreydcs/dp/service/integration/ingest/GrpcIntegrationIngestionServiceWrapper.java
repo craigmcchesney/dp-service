@@ -415,11 +415,11 @@ public class GrpcIntegrationIngestionServiceWrapper extends GrpcIntegrationServi
             final IngestDataResponse response = responseList.get(listIndex);
 
             // verify API response
-            final int numPvs = params.columnNames.size();
+            final int numPvs = params.columnNames().size();
             assertTrue(response.hasAckResult());
             final IngestDataResponse.AckResult ackResult = response.getAckResult();
             assertEquals(numPvs, ackResult.getNumColumns());
-            assertEquals((int) params.samplingClockCount, ackResult.getNumRows());
+            assertEquals((int) params.samplingClockCount(), ackResult.getNumRows());
 
             // verify database contents (request status and corresponding bucket documents)
             bucketDocumentList.addAll(verifyIngestionHandling(params, request, numSerializedDataColumnsExpected));
@@ -437,9 +437,9 @@ public class GrpcIntegrationIngestionServiceWrapper extends GrpcIntegrationServi
         final List<BucketDocument> bucketDocumentList = new ArrayList<>();
 
         // validate database RequestStatusDocument
-        final int numPvs = params.columnNames.size();
+        final int numPvs = params.columnNames().size();
         final RequestStatusDocument statusDocument =
-                mongoClient.findRequestStatus(params.providerId, params.requestId);
+                mongoClient.findRequestStatus(params.providerId(), params.requestId());
         assertNotNull(statusDocument);
         assertNotNull(statusDocument.getCreatedAt());
         assertEquals(
@@ -447,9 +447,9 @@ public class GrpcIntegrationIngestionServiceWrapper extends GrpcIntegrationServi
                 statusDocument.getRequestStatusCase());
         assertEquals(numPvs, statusDocument.getIdsCreated().size());
         final List<String> expectedBucketIds = new ArrayList<>();
-        for (String pvName : params.columnNames) {
+        for (String pvName : params.columnNames()) {
             final String expectedBucketId =
-                    pvName + "-" + params.samplingClockStartSeconds + "-" + params.samplingClockStartNanos;
+                    pvName + "-" + params.samplingClockStartSeconds() + "-" + params.samplingClockStartNanos();
             assertTrue(expectedBucketId, statusDocument.getIdsCreated().contains(expectedBucketId));
             expectedBucketIds.add(expectedBucketId);
         }
@@ -463,7 +463,7 @@ public class GrpcIntegrationIngestionServiceWrapper extends GrpcIntegrationServi
             bucketDocumentList.add(bucketDocument);
 
             assertNotNull(bucketDocument);
-            final String pvName = params.columnNames.get(pvIndex);
+            final String pvName = params.columnNames().get(pvIndex);
             assertEquals(pvName, bucketDocument.getPvName());
             assertEquals(expectedBucketId, bucketDocument.getId());
 
@@ -472,19 +472,19 @@ public class GrpcIntegrationIngestionServiceWrapper extends GrpcIntegrationServi
 
             // check bucket start times
             assertEquals(
-                    (long) params.samplingClockStartSeconds,
+                    (long) params.samplingClockStartSeconds(),
                     bucketDocument.getDataTimestamps().getFirstTime().getSeconds());
             assertEquals(
-                    (long) params.samplingClockStartNanos,
+                    (long) params.samplingClockStartNanos(),
                     bucketDocument.getDataTimestamps().getFirstTime().getNanos());
             assertEquals(
                     Date.from(Instant.ofEpochSecond(
-                            params.samplingClockStartSeconds, params.samplingClockStartNanos)),
+                            params.samplingClockStartSeconds(), params.samplingClockStartNanos())),
                     bucketDocument.getDataTimestamps().getFirstTime().getDateTime());
 
             // check sample count params
             assertEquals(
-                    (int) params.samplingClockCount,
+                    (int) params.samplingClockCount(),
                     bucketDocument.getDataTimestamps().getSampleCount());
             DataColumn bucketDataColumn = null;
             try {
@@ -494,7 +494,7 @@ public class GrpcIntegrationIngestionServiceWrapper extends GrpcIntegrationServi
             }
             Objects.requireNonNull(bucketDataColumn);
             assertEquals(
-                    (int) params.samplingClockCount,
+                    (int) params.samplingClockCount(),
                     bucketDataColumn.getDataValuesList().size());
 
             // check DataTimestamps (TimestampsList or SamplingClock depending on request)
@@ -514,7 +514,7 @@ public class GrpcIntegrationIngestionServiceWrapper extends GrpcIntegrationServi
                     requestDataTimestampsModel.getSamplePeriodNanos(),
                     bucketDocument.getDataTimestamps().getSamplePeriod());
 
-            if (params.timestampsSecondsList != null && !params.timestampsSecondsList.isEmpty()) {
+            if (params.timestampsSecondsList() != null && !params.timestampsSecondsList().isEmpty()) {
                 // check explicit TimestampsList
                 assertEquals(
                         DataTimestamps.ValueCase.TIMESTAMPLIST.getNumber(),
@@ -527,12 +527,12 @@ public class GrpcIntegrationIngestionServiceWrapper extends GrpcIntegrationServi
                 assertTrue(bucketDataTimestamps.hasTimestampList());
                 final List<Timestamp> bucketTimestampList =
                         bucketDataTimestamps.getTimestampList().getTimestampsList();
-                assertEquals(params.timestampsSecondsList.size(), bucketTimestampList.size());
-                assertEquals(params.timestampNanosList.size(), bucketTimestampList.size());
+                assertEquals(params.timestampsSecondsList().size(), bucketTimestampList.size());
+                assertEquals(params.timestampNanosList().size(), bucketTimestampList.size());
                 for (int timestampIndex = 0; timestampIndex < bucketTimestampList.size(); ++timestampIndex) {
                     final Timestamp bucketTimestamp = bucketTimestampList.get(timestampIndex);
-                    final long requestSeconds = params.timestampsSecondsList.get(timestampIndex);
-                    final long requestNanos = params.timestampNanosList.get(timestampIndex);
+                    final long requestSeconds = params.timestampsSecondsList().get(timestampIndex);
+                    final long requestNanos = params.timestampNanosList().get(timestampIndex);
                     assertEquals(requestSeconds, bucketTimestamp.getEpochSeconds());
                     assertEquals(requestNanos, bucketTimestamp.getNanoseconds());
                 }
@@ -558,7 +558,7 @@ public class GrpcIntegrationIngestionServiceWrapper extends GrpcIntegrationServi
             // compare data value vectors
             DataColumn requestDataColumn = null;
 
-            if (params.useSerializedDataColumns) {
+            if (params.useSerializedDataColumns()) {
                 // request contains SerializedDataColumns
                 final List<SerializedDataColumn> serializedDataColumnList =
                         request.getIngestionDataFrame().getSerializedDataColumnsList();
@@ -690,8 +690,6 @@ public class GrpcIntegrationIngestionServiceWrapper extends GrpcIntegrationServi
                     new IngestionTestBase.IngestionRequestParams(
                             columnInfo.providerId,
                             requestId,
-                            null,
-                            null,
                             timestampSecondsList, // if not null, request will use explicit TimestampsList in DataTimestamps
                             timestampNanosList,
                             currentSeconds,
@@ -701,8 +699,8 @@ public class GrpcIntegrationIngestionServiceWrapper extends GrpcIntegrationServi
                             List.of(columnName),
                             IngestionTestBase.IngestionDataType.DOUBLE,
                             columnValues,
-                            columnInfo.useSerializedDataColumns
-                    );
+                            null, columnInfo.useSerializedDataColumns,
+                            null, null);
             paramsList.add(params);
 
             final Instant startTimeInstant = Instant.ofEpochSecond(currentSeconds, startNanos);

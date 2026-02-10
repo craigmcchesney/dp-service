@@ -29,113 +29,39 @@ public class IngestionTestBase {
     }
 
     /**
-     * Encapsulates the parameters for creating an IngestionRequest API object.
+     * Encapsulates the parameters for creating an IngestDataRequest API object.
      */
-    public static class IngestionRequestParams {
-
-        public String providerId = null;
-        public String requestId = null;
-        public Long snapshotStartTimestampSeconds = null;
-        public Long snapshotStartTimestampNanos = null;
-        public List<Long> timestampsSecondsList = null;
-        public List<Long> timestampNanosList = null;
-        public Long samplingClockStartSeconds = null;
-        public Long samplingClockStartNanos = null;
-        public Long samplingClockPeriodNanos = null;
-        public Integer samplingClockCount = null;
-        public List<String> columnNames = null;
-        public IngestionDataType dataType = null;
-        public List<List<Object>> values = null;
-        public List<List<DataValue.ValueStatus>> valuesStatus = null;
-        public final boolean useSerializedDataColumns;
-
-        public IngestionRequestParams(
-                String providerId,
-                String requestId,
-                Long snapshotStartTimestampSeconds,
-                Long snapshotStartTimestampNanos,
-                List<Long> timestampsSecondsList,
-                List<Long> timestampNanosList,
-                Long samplingClockStartSeconds,
-                Long samplingClockStartNanos,
-                Long samplingClockPeriodNanos,
-                Integer samplingClockCount,
-                List<String> columnNames,
-                IngestionDataType dataType,
-                List<List<Object>> values,
-                List<List<DataValue.ValueStatus>> valuesStatus,
-                boolean useSerializedDataColumns
-        ) {
-            this.providerId = providerId;
-            this.requestId = requestId;
-            this.snapshotStartTimestampSeconds = snapshotStartTimestampSeconds;
-            this.snapshotStartTimestampNanos = snapshotStartTimestampNanos;
-            this.timestampsSecondsList = timestampsSecondsList;
-            this.timestampNanosList = timestampNanosList;
-            this.samplingClockStartSeconds = samplingClockStartSeconds;
-            this.samplingClockStartNanos = samplingClockStartNanos;
-            this.samplingClockPeriodNanos = samplingClockPeriodNanos;
-            this.samplingClockCount = samplingClockCount;
-            this.columnNames = columnNames;
-            this.dataType = dataType;
-            this.values = values;
-            this.valuesStatus = valuesStatus;
-            this.useSerializedDataColumns = useSerializedDataColumns;
-        }
-
-        public IngestionRequestParams(
-                String providerId,
-                String requestId,
-                Long snapshotStartTimestampSeconds,
-                Long snapshotStartTimestampNanos,
-                List<Long> timestampsSecondsList,
-                List<Long> timestampNanosList,
-                Long samplingClockStartSeconds,
-                Long samplingClockStartNanos,
-                Long samplingClockPeriodNanos,
-                Integer samplingClockCount,
-                List<String> columnNames,
-                IngestionDataType dataType,
-                List<List<Object>> values,
-                boolean useSerializedDataColumns
-        ) {
-
-            this(
-                    providerId,
-                    requestId,
-                    snapshotStartTimestampSeconds,
-                    snapshotStartTimestampNanos,
-                    timestampsSecondsList,
-                    timestampNanosList,
-                    samplingClockStartSeconds,
-                    samplingClockStartNanos,
-                    samplingClockPeriodNanos,
-                    samplingClockCount,
-                    columnNames,
-                    dataType,
-                    values,
-                    null,
-                    useSerializedDataColumns);
-        }
-    }
-
-    public static IngestDataRequest buildIngestionRequest(IngestionRequestParams params) {
-        return buildIngestionRequest(params, null, null);
+    public record IngestionRequestParams(
+            String providerId,
+            String requestId,
+            List<Long> timestampsSecondsList,
+            List<Long> timestampNanosList,
+            Long samplingClockStartSeconds,
+            Long samplingClockStartNanos,
+            Long samplingClockPeriodNanos,
+            Integer samplingClockCount,
+            List<String> columnNames,
+            IngestionDataType dataType,
+            List<List<Object>> values,
+            List<List<DataValue.ValueStatus>> valuesStatus,
+            boolean useSerializedDataColumns,
+            List<DataColumn> dataColumnList,
+            List<DoubleColumn> doubleColumnList) {
     }
 
     /**
-     * Builds an IngestionRequest gRPC API object from an IngestionRequestParams object.
+     * Builds an IngestDataRequest API object from an IngestionRequestParams object.
      * This utility avoids having code to build API requests scattered around the test methods.
+     * If params object contains a list of column names and column data values, there is special handling
+     * to create DataColumns containing the appropriate DataValues (depending on the type of Objects supplied in the
+     * params).  Otherwise, the caller supplies a prebuilt list of protobuf columns of one of the supported types
+     * and those columns are simply passed through to the resulting request object.
      *
      * @param params
-     * @param doubleColumnList
      * @return
      */
-    public static IngestDataRequest buildIngestionRequest(
-            IngestionRequestParams params,
-            List<DataColumn> dataColumnList,
-            List<DoubleColumn> doubleColumnList
-    ) {
+    public static IngestDataRequest buildIngestionRequest(IngestionRequestParams params) {
+
         IngestDataRequest.Builder requestBuilder = IngestDataRequest.newBuilder();
 
         if (params.providerId != null) {
@@ -193,16 +119,14 @@ public class IngestionTestBase {
         // create list of columns
         final List<DataColumn> frameColumns = new ArrayList<>();
 
-        if (dataColumnList != null) {
-            // use list of DataColumns provided by caller
-            frameColumns.addAll(dataColumnList);
+        // DataColumn handling: use explicit list if provided, otherwise build list of DataColumns if appropriate
+        // params are specified.
+        if (params.dataColumnList() != null) {
+            // use explicit list of DataColumns provided by caller
+            frameColumns.addAll(params.dataColumnList());
 
-        } else if (doubleColumnList != null) {
-            // use list of DoubleColumns provided by caller
-            dataFrameBuilder.addAllDoubleColumns(doubleColumnList);
-
-        } else if (params.columnNames != null) {
-            // otherwise create columns from params
+        } else if (params.columnNames != null && params.values != null) {
+            // otherwise create DataColumns from column names and values from params
 
             assertTrue(params.values != null);
             assertEquals(params.columnNames.size(), params.values.size());
@@ -272,7 +196,7 @@ public class IngestionTestBase {
             }
         }
 
-        // add DataColumns or SerializedDataColumns
+        // Determine whether to add DataColumns or SerializedDataColumns
         if (params.useSerializedDataColumns) {
             // add SerializedDataColumns as specified in params
             for (DataColumn dataColumn : frameColumns) {
@@ -289,6 +213,14 @@ public class IngestionTestBase {
             // add regular DataColumns
             dataFrameBuilder.addAllDataColumns(frameColumns);
         }
+
+        // pass through lists of data columns for various supported protobuf column types to request
+
+        if (params.doubleColumnList() != null) {
+            // use list of DoubleColumns provided by caller
+            dataFrameBuilder.addAllDoubleColumns(params.doubleColumnList());
+        }
+
         dataFrameBuilder.build();
 
         requestBuilder.setIngestionDataFrame(dataFrameBuilder);

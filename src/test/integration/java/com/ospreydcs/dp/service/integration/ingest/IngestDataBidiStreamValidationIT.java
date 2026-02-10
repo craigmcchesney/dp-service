@@ -41,15 +41,13 @@ public class IngestDataBidiStreamValidationIT extends GrpcIntegrationTestBase {
                         requestId,
                         null,
                         null,
-                        null,
-                        null,
                         instantNow.getEpochSecond(),
                         0L,
                         1_000_000L,
                         1,
                         columnNames,
                         IngestionTestBase.IngestionDataType.DOUBLE,
-                        values, null, false);
+                        values, null, false, null, null);
         final IngestDataRequest request = IngestionTestBase.buildIngestionRequest(params);
         final List<IngestDataRequest> requests = Arrays.asList(request);
 

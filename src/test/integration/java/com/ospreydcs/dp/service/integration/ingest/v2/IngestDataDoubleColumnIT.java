@@ -2,7 +2,6 @@ package com.ospreydcs.dp.service.integration.ingest.v2;
 
 import com.ospreydcs.dp.grpc.v1.common.DoubleColumn;
 import com.ospreydcs.dp.grpc.v1.ingestion.IngestDataRequest;
-import com.ospreydcs.dp.grpc.v1.ingestion.IngestDataResponse;
 import com.ospreydcs.dp.service.common.bson.bucket.BucketDocument;
 import com.ospreydcs.dp.service.ingest.IngestionTestBase;
 import com.ospreydcs.dp.service.integration.GrpcIntegrationTestBase;
@@ -46,28 +45,10 @@ public class IngestDataDoubleColumnIT extends GrpcIntegrationTestBase {
             String requestId = "request-8";
             String pvName = "pv_08";
             List<String> columnNames = Arrays.asList(pvName);
-            Map<String, String> attributes = Map.of("subsystem", "vacuum", "sector", "42");
-            String eventDescription = "calibration test";
             long firstSeconds = Instant.now().getEpochSecond();
             long firstNanos = 0L;
             long sampleIntervalNanos = 1_000_000L;
             int numSamples = 2;
-            IngestionTestBase.IngestionRequestParams params =
-                    new IngestionTestBase.IngestionRequestParams(
-                            providerId,
-                            requestId,
-                            null,
-                            null,
-                            null,
-                            null,
-                            firstSeconds,
-                            firstNanos,
-                            sampleIntervalNanos,
-                            numSamples,
-                            columnNames,
-                            IngestionTestBase.IngestionDataType.ARRAY_DOUBLE,
-                            null, // don't set any column values, we're going to override
-                            false);
 
             // specify explicit DoubleColumn data
             List<DoubleColumn> doubleColumns = new ArrayList<>();
@@ -77,8 +58,26 @@ public class IngestDataDoubleColumnIT extends GrpcIntegrationTestBase {
             doubleColumnBuilder.addValues(34.56);
             doubleColumns.add(doubleColumnBuilder.build());
 
+            IngestionTestBase.IngestionRequestParams params =
+                    new IngestionTestBase.IngestionRequestParams(
+                            providerId,
+                            requestId,
+                            null,
+                            null,
+                            firstSeconds,
+                            firstNanos,
+                            sampleIntervalNanos,
+                            numSamples,
+                            columnNames,
+                            IngestionTestBase.IngestionDataType.ARRAY_DOUBLE,
+                            null,
+                            null,
+                            false,
+                            null,
+                            doubleColumns);
+
             IngestDataRequest request =
-                    IngestionTestBase.buildIngestionRequest(params, null, doubleColumns);
+                    IngestionTestBase.buildIngestionRequest(params);
 
             // Use the existing framework but skip full verification for now
             // The sendAndVerifyIngestData method has issues with new column types

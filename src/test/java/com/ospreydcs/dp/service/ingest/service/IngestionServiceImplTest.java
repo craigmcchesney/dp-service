@@ -63,15 +63,13 @@ public class IngestionServiceImplTest extends IngestionTestBase {
                         requestId,
                         null,
                         null,
-                        null,
-                        null,
                         instantNow.getEpochSecond(),
                         0L,
                         1_000_000L,
                         numSamples,
                         columnNames,
                         IngestionDataType.DOUBLE,
-                        values, null, false);
+                        values, null, false, null, null);
         IngestDataRequest request = buildIngestionRequest(params);
 
         // test ingestionResponseAck
@@ -100,15 +98,13 @@ public class IngestionServiceImplTest extends IngestionTestBase {
                         requestId,
                         null,
                         null,
-                        null,
-                        null,
                         instantNow.getEpochSecond(),
                         0L,
                         1_000_000L,
                         numSamples,
                         columnNames,
                         IngestionDataType.DOUBLE,
-                        values, null, false);
+                        values, null, false, null, null);
         IngestDataRequest request = buildIngestionRequest(params);
 
         // test ingestionResponseRejectInvalid

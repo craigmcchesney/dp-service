@@ -89,21 +89,6 @@ public abstract class IngestDataTypesTestBase extends GrpcIntegrationTestBase {
             final long samplePeriod = 1_000_000_000L / numSamples;
             final long endSeconds = startSeconds;
             final long endNanos = samplePeriod * (numSamples - 1);
-            final IngestionTestBase.IngestionRequestParams params =
-                    new IngestionTestBase.IngestionRequestParams(
-                            providerId,
-                            requestId,
-                            null,
-                            null,
-                            null,
-                            null,
-                            startSeconds,
-                            startNanos,
-                            samplePeriod, // 5 values per second
-                            numSamples, // each DataColumn must contain 5 DataValues
-                            pvNames,
-                            null,
-                            null, null, false);
 
             // build list of DataColumns
             arrayDataColumnList = new ArrayList<>(pvNames.size());
@@ -157,9 +142,27 @@ public abstract class IngestDataTypesTestBase extends GrpcIntegrationTestBase {
                 arrayValidationMap.put(dataColumn, dataValueModelList);
             }
 
+            final IngestionTestBase.IngestionRequestParams params =
+                    new IngestionTestBase.IngestionRequestParams(
+                            providerId,
+                            requestId,
+                            null,
+                            null,
+                            startSeconds,
+                            startNanos,
+                            samplePeriod, // 5 values per second
+                            numSamples, // each DataColumn must contain 5 DataValues
+                            pvNames,
+                            null,
+                            null,
+                            null,
+                            false,
+                            arrayDataColumnList,
+                            null);
+
             // build request
             final IngestDataRequest ingestionRequest =
-                    IngestionTestBase.buildIngestionRequest(params, arrayDataColumnList, null);
+                    IngestionTestBase.buildIngestionRequest(params);
 
             // send request
             final List<BucketDocument> bucketDocumentList=
@@ -239,21 +242,6 @@ public abstract class IngestDataTypesTestBase extends GrpcIntegrationTestBase {
             final long samplePeriod = 1_000_000_000L / numSamples;
             final long endSeconds = startSeconds;
             final long endNanos = samplePeriod * (numSamples - 1);
-            final IngestionTestBase.IngestionRequestParams params =
-                    new IngestionTestBase.IngestionRequestParams(
-                            providerId,
-                            requestId,
-                            null,
-                            null,
-                            null,
-                            null,
-                            startSeconds,
-                            startNanos,
-                            samplePeriod, // 5 values per second
-                            numSamples, // each DataColumn must contain 5 DataValues
-                            pvNames,
-                            null,
-                            null, null, false);
 
             // build list of DataColumns
             final List<DataColumn> dataColumnList = new ArrayList<>();
@@ -276,9 +264,27 @@ public abstract class IngestDataTypesTestBase extends GrpcIntegrationTestBase {
                 dataColumnList.add(dataColumn);
             }
 
+            final IngestionTestBase.IngestionRequestParams params =
+                    new IngestionTestBase.IngestionRequestParams(
+                            providerId,
+                            requestId,
+                            null,
+                            null,
+                            startSeconds,
+                            startNanos,
+                            samplePeriod, // 5 values per second
+                            numSamples, // each DataColumn must contain 5 DataValues
+                            pvNames,
+                            null,
+                            null,
+                            null,
+                            false,
+                            dataColumnList,
+                            null);
+
             // build request
             final IngestDataRequest ingestionRequest =
-                    IngestionTestBase.buildIngestionRequest(params, dataColumnList, null);
+                    IngestionTestBase.buildIngestionRequest(params);
 
             // send request
             final List<BucketDocument> bucketDocumentList=
@@ -369,21 +375,6 @@ public abstract class IngestDataTypesTestBase extends GrpcIntegrationTestBase {
             final long samplePeriod = 1_000_000_000L / numSamples;
             final long endSeconds = startSeconds;
             final long endNanos = samplePeriod * (numSamples - 1);
-            final IngestionTestBase.IngestionRequestParams params =
-                    new IngestionTestBase.IngestionRequestParams(
-                            providerId,
-                            requestId,
-                            null,
-                            null,
-                            null,
-                            null,
-                            startSeconds,
-                            startNanos,
-                            samplePeriod,
-                            numSamples,
-                            pvNames,
-                            null,
-                            null, null, false);
 
             // build list of DataColumns
             final List<DataColumn> dataColumnList = new ArrayList<>();
@@ -487,9 +478,27 @@ public abstract class IngestDataTypesTestBase extends GrpcIntegrationTestBase {
                 validationMap.put(dataColumn, dataValueModelList);
             }
 
+            final IngestionTestBase.IngestionRequestParams params =
+                    new IngestionTestBase.IngestionRequestParams(
+                            providerId,
+                            requestId,
+                            null,
+                            null,
+                            startSeconds,
+                            startNanos,
+                            samplePeriod,
+                            numSamples,
+                            pvNames,
+                            null,
+                            null,
+                            null,
+                            false,
+                            dataColumnList,
+                            null);
+
             // build request
             final IngestDataRequest ingestionRequest =
-                    IngestionTestBase.buildIngestionRequest(params, dataColumnList, null);
+                    IngestionTestBase.buildIngestionRequest(params);
 
             // send request
             final List<BucketDocument> bucketDocumentList =

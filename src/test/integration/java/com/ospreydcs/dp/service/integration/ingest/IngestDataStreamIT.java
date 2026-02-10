@@ -49,8 +49,6 @@ public class IngestDataStreamIT extends GrpcIntegrationTestBase {
                                 requestId,
                                 null,
                                 null,
-                                null,
-                                null,
                                 instantNow.getEpochSecond(),
                                 0L,
                                 1_000_000L,
@@ -59,7 +57,7 @@ public class IngestDataStreamIT extends GrpcIntegrationTestBase {
                                 IngestionTestBase.IngestionDataType.DOUBLE,
                                 values,
                                 null,
-                                false);
+                                false, null, null);
                 final IngestDataRequest request = IngestionTestBase.buildIngestionRequest(params);
                 paramsList.add(params);
                 requestList.add(request);
@@ -77,8 +75,6 @@ public class IngestDataStreamIT extends GrpcIntegrationTestBase {
                                 requestId,
                                 null,
                                 null,
-                                null,
-                                null,
                                 instantNow.getEpochSecond(),
                                 0L,
                                 1_000_000L,
@@ -87,7 +83,7 @@ public class IngestDataStreamIT extends GrpcIntegrationTestBase {
                                 IngestionTestBase.IngestionDataType.DOUBLE,
                                 values,
                                 null,
-                                false);
+                                false, null, null);
                 final IngestDataRequest request = IngestionTestBase.buildIngestionRequest(params);
                 paramsList.add(params);
                 requestList.add(request);
@@ -115,15 +111,13 @@ public class IngestDataStreamIT extends GrpcIntegrationTestBase {
                                 requestId,
                                 null,
                                 null,
-                                null,
-                                null,
                                 instantNow.getEpochSecond(),
                                 0L,
                                 1_000_000L,
                                 1,
                                 columnNames,
                                 IngestionTestBase.IngestionDataType.DOUBLE,
-                                values, null, false);
+                                values, null, false, null, null);
                 final IngestDataRequest request = IngestionTestBase.buildIngestionRequest(params);
                 paramsList.add(params);
                 requestList.add(request);
@@ -141,15 +135,13 @@ public class IngestDataStreamIT extends GrpcIntegrationTestBase {
                                 requestId,
                                 null,
                                 null,
-                                null,
-                                null,
                                 instantNow.getEpochSecond(),
                                 0L,
                                 1_000_000L,
                                 1,
                                 columnNames,
                                 IngestionTestBase.IngestionDataType.DOUBLE,
-                                values, null, false);
+                                values, null, false, null, null);
                 final IngestDataRequest request = IngestionTestBase.buildIngestionRequest(params);
                 paramsList.add(params);
                 requestList.add(request);
