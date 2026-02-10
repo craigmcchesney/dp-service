@@ -267,7 +267,7 @@ public class MongoIngestionHandlerTestBase extends IngestionTestBase {
                         columnNames,
                         IngestionDataType.DOUBLE,
                         values,
-                        null, false, null, null);
+                        null, false, null);
         IngestDataRequest request = buildIngestionRequest(params);
 
         // send request and examine responses
@@ -324,8 +324,8 @@ public class MongoIngestionHandlerTestBase extends IngestionTestBase {
                         null, // don't set any column values, we're going to override
                         null,
                         false,
-                        dataColumnList,
-                        null);
+                        dataColumnList
+                );
 
         IngestDataRequest request = buildIngestionRequest(params);
 
@@ -371,7 +371,7 @@ public class MongoIngestionHandlerTestBase extends IngestionTestBase {
                         columnNames,
                         IngestionDataType.DOUBLE,
                         values,
-                        null, false, null, null);
+                        null, false, null);
         IngestDataRequest request = buildIngestionRequest(params);
 
         // send request and examine responses
@@ -423,7 +423,7 @@ public class MongoIngestionHandlerTestBase extends IngestionTestBase {
                         columnNames,
                         IngestionDataType.STRING,
                         values,
-                        null, false, null, null);
+                        null, false, null);
         IngestDataRequest request = buildIngestionRequest(params);
 
         // send request and examine responses
@@ -464,7 +464,7 @@ public class MongoIngestionHandlerTestBase extends IngestionTestBase {
                         columnNames,
                         IngestionDataType.INT,
                         values,
-                        null, false, null, null);
+                        null, false, null);
         IngestDataRequest request = buildIngestionRequest(params);
 
         // send request and examine responses
@@ -505,7 +505,7 @@ public class MongoIngestionHandlerTestBase extends IngestionTestBase {
                         columnNames,
                         IngestionDataType.BOOLEAN,
                         values,
-                        null, false, null, null);
+                        null, false, null);
         IngestDataRequest request = buildIngestionRequest(params);
 
         // send request and examine responses
@@ -550,7 +550,7 @@ public class MongoIngestionHandlerTestBase extends IngestionTestBase {
                         columnNames,
                         IngestionDataType.ARRAY_DOUBLE,
                         values,
-                        null, false, null, null);
+                        null, false, null);
         IngestDataRequest request = buildIngestionRequest(params);
 
         // send request and examine responses

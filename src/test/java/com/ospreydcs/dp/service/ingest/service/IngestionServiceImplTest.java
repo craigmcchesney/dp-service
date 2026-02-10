@@ -69,7 +69,7 @@ public class IngestionServiceImplTest extends IngestionTestBase {
                         numSamples,
                         columnNames,
                         IngestionDataType.DOUBLE,
-                        values, null, false, null, null);
+                        values, null, false, null);
         IngestDataRequest request = buildIngestionRequest(params);
 
         // test ingestionResponseAck
@@ -104,7 +104,7 @@ public class IngestionServiceImplTest extends IngestionTestBase {
                         numSamples,
                         columnNames,
                         IngestionDataType.DOUBLE,
-                        values, null, false, null, null);
+                        values, null, false, null);
         IngestDataRequest request = buildIngestionRequest(params);
 
         // test ingestionResponseRejectInvalid

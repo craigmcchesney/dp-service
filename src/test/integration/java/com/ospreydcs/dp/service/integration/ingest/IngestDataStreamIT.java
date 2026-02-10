@@ -57,7 +57,7 @@ public class IngestDataStreamIT extends GrpcIntegrationTestBase {
                                 IngestionTestBase.IngestionDataType.DOUBLE,
                                 values,
                                 null,
-                                false, null, null);
+                                false, null);
                 final IngestDataRequest request = IngestionTestBase.buildIngestionRequest(params);
                 paramsList.add(params);
                 requestList.add(request);
@@ -83,7 +83,7 @@ public class IngestDataStreamIT extends GrpcIntegrationTestBase {
                                 IngestionTestBase.IngestionDataType.DOUBLE,
                                 values,
                                 null,
-                                false, null, null);
+                                false, null);
                 final IngestDataRequest request = IngestionTestBase.buildIngestionRequest(params);
                 paramsList.add(params);
                 requestList.add(request);
@@ -117,7 +117,7 @@ public class IngestDataStreamIT extends GrpcIntegrationTestBase {
                                 1,
                                 columnNames,
                                 IngestionTestBase.IngestionDataType.DOUBLE,
-                                values, null, false, null, null);
+                                values, null, false, null);
                 final IngestDataRequest request = IngestionTestBase.buildIngestionRequest(params);
                 paramsList.add(params);
                 requestList.add(request);
@@ -141,7 +141,7 @@ public class IngestDataStreamIT extends GrpcIntegrationTestBase {
                                 1,
                                 columnNames,
                                 IngestionTestBase.IngestionDataType.DOUBLE,
-                                values, null, false, null, null);
+                                values, null, false, null);
                 final IngestDataRequest request = IngestionTestBase.buildIngestionRequest(params);
                 paramsList.add(params);
                 requestList.add(request);

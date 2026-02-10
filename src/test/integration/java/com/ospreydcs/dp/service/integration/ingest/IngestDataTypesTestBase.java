@@ -157,8 +157,8 @@ public abstract class IngestDataTypesTestBase extends GrpcIntegrationTestBase {
                             null,
                             null,
                             false,
-                            arrayDataColumnList,
-                            null);
+                            arrayDataColumnList
+                    );
 
             // build request
             final IngestDataRequest ingestionRequest =
@@ -279,8 +279,8 @@ public abstract class IngestDataTypesTestBase extends GrpcIntegrationTestBase {
                             null,
                             null,
                             false,
-                            dataColumnList,
-                            null);
+                            dataColumnList
+                    );
 
             // build request
             final IngestDataRequest ingestionRequest =
@@ -493,8 +493,8 @@ public abstract class IngestDataTypesTestBase extends GrpcIntegrationTestBase {
                             null,
                             null,
                             false,
-                            dataColumnList,
-                            null);
+                            dataColumnList
+                    );
 
             // build request
             final IngestDataRequest ingestionRequest =

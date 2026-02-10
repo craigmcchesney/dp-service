@@ -15,7 +15,6 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 public class IngestDataDoubleColumnIT extends GrpcIntegrationTestBase {
 
@@ -58,6 +57,7 @@ public class IngestDataDoubleColumnIT extends GrpcIntegrationTestBase {
             doubleColumnBuilder.addValues(34.56);
             doubleColumns.add(doubleColumnBuilder.build());
 
+            // create request parameters
             IngestionTestBase.IngestionRequestParams params =
                     new IngestionTestBase.IngestionRequestParams(
                             providerId,
@@ -73,8 +73,9 @@ public class IngestDataDoubleColumnIT extends GrpcIntegrationTestBase {
                             null,
                             null,
                             false,
-                            null,
-                            doubleColumns);
+                            null
+                    );
+            params.setDoubleColumnList(doubleColumns); // add list of DoubleColumns to request parameters
 
             IngestDataRequest request =
                     IngestionTestBase.buildIngestionRequest(params);

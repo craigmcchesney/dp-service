@@ -60,7 +60,7 @@ public class IngestDataStreamBytesIT extends GrpcIntegrationTestBase {
                                 IngestionTestBase.IngestionDataType.DOUBLE,
                                 values,
                                 null,
-                                true, null, null);
+                                true, null);
                 final IngestDataRequest request = IngestionTestBase.buildIngestionRequest(params);
                 paramsList.add(params);
                 requestList.add(request);
@@ -86,7 +86,7 @@ public class IngestDataStreamBytesIT extends GrpcIntegrationTestBase {
                                 IngestionTestBase.IngestionDataType.DOUBLE,
                                 values,
                                 null,
-                                true, null, null);
+                                true, null);
                 final IngestDataRequest request = IngestionTestBase.buildIngestionRequest(params);
                 paramsList.add(params);
                 requestList.add(request);

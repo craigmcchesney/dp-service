@@ -30,24 +30,188 @@ public class IngestionTestBase {
 
     /**
      * Encapsulates the parameters for creating an IngestDataRequest API object.
+     *
+     * The caller should create an instance with the desired fields set, and then call one of the setter methods with
+     * a list of columns of the appropriate type.  The DataColumns handling from the original implementation is preserved
+     * for backward compatibility.
      */
-    public record IngestionRequestParams(
-            String providerId,
-            String requestId,
-            List<Long> timestampsSecondsList,
-            List<Long> timestampNanosList,
-            Long samplingClockStartSeconds,
-            Long samplingClockStartNanos,
-            Long samplingClockPeriodNanos,
-            Integer samplingClockCount,
-            List<String> columnNames,
-            IngestionDataType dataType,
-            List<List<Object>> values,
-            List<List<DataValue.ValueStatus>> valuesStatus,
-            boolean useSerializedDataColumns,
-            List<DataColumn> dataColumnList,
-            List<DoubleColumn> doubleColumnList) {
-    }
+    public static final class IngestionRequestParams {
+
+        private final String providerId;
+        private final String requestId;
+
+        // fields for explicit list of timestamps in request DataTimestamps
+        private final List<Long> timestampsSecondsList;
+        private final List<Long> timestampNanosList;
+
+        // fields for Sampling Clock in request DataTimestamps
+        private final Long samplingClockStartSeconds;
+        private final Long samplingClockStartNanos;
+        private final Long samplingClockPeriodNanos;
+        private final Integer samplingClockCount;
+
+        // list of column names
+        private final List<String> columnNames;
+
+        // fields for building request list of DataColumns with DataValue / ValueStatus objects
+        private final IngestionDataType dataType;
+        private final List<List<Object>> values;
+        private final List<List<DataValue.ValueStatus>> valuesStatus;
+
+        // specifies to use SerializedDataColumns instead of regular DataColumns in the request
+        private final boolean useSerializedDataColumns;
+
+        // explicit list of prebuilt DataColumns, instead of construcint them from the dataType / values fields
+        private final List<DataColumn> dataColumnList;
+
+        // data column lists corresponding to the protobuf column types for ingestion
+        // TODO: add other new protobuf column types
+        private List<DoubleColumn> doubleColumnList = null;
+
+        public IngestionRequestParams(
+                String providerId,
+                String requestId,
+                List<Long> timestampsSecondsList,
+                List<Long> timestampNanosList,
+                Long samplingClockStartSeconds,
+                Long samplingClockStartNanos,
+                Long samplingClockPeriodNanos,
+                Integer samplingClockCount,
+                List<String> columnNames,
+                IngestionDataType dataType,
+                List<List<Object>> values,
+                List<List<DataValue.ValueStatus>> valuesStatus,
+                boolean useSerializedDataColumns,
+                List<DataColumn> dataColumnList
+        ) {
+            this.providerId = providerId;
+            this.requestId = requestId;
+            this.timestampsSecondsList = timestampsSecondsList;
+            this.timestampNanosList = timestampNanosList;
+            this.samplingClockStartSeconds = samplingClockStartSeconds;
+            this.samplingClockStartNanos = samplingClockStartNanos;
+            this.samplingClockPeriodNanos = samplingClockPeriodNanos;
+            this.samplingClockCount = samplingClockCount;
+            this.columnNames = columnNames;
+            this.dataType = dataType;
+            this.values = values;
+            this.valuesStatus = valuesStatus;
+            this.useSerializedDataColumns = useSerializedDataColumns;
+            this.dataColumnList = dataColumnList;
+        }
+
+        public String providerId() {
+            return providerId;
+        }
+
+        public String requestId() {
+            return requestId;
+        }
+
+        public List<Long> timestampsSecondsList() {
+            return timestampsSecondsList;
+        }
+
+        public List<Long> timestampNanosList() {
+            return timestampNanosList;
+        }
+
+        public Long samplingClockStartSeconds() {
+            return samplingClockStartSeconds;
+        }
+
+        public Long samplingClockStartNanos() {
+            return samplingClockStartNanos;
+        }
+
+        public Long samplingClockPeriodNanos() {
+            return samplingClockPeriodNanos;
+        }
+
+        public Integer samplingClockCount() {
+            return samplingClockCount;
+        }
+
+        public List<String> columnNames() {
+            return columnNames;
+        }
+
+        public IngestionDataType dataType() {
+            return dataType;
+        }
+
+        public List<List<Object>> values() {
+            return values;
+        }
+
+        public List<List<DataValue.ValueStatus>> valuesStatus() {
+            return valuesStatus;
+        }
+
+        public boolean useSerializedDataColumns() {
+            return useSerializedDataColumns;
+        }
+
+        public List<DataColumn> dataColumnList() {
+            return dataColumnList;
+        }
+
+        public void setDoubleColumnList(List<DoubleColumn> doubleColumnList) {
+            this.doubleColumnList = doubleColumnList;
+        }
+
+        public List<DoubleColumn> doubleColumnList() {
+            return doubleColumnList;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == this) return true;
+            if (obj == null || obj.getClass() != this.getClass()) return false;
+            var that = (IngestionRequestParams) obj;
+            return Objects.equals(this.providerId, that.providerId) &&
+                    Objects.equals(this.requestId, that.requestId) &&
+                    Objects.equals(this.timestampsSecondsList, that.timestampsSecondsList) &&
+                    Objects.equals(this.timestampNanosList, that.timestampNanosList) &&
+                    Objects.equals(this.samplingClockStartSeconds, that.samplingClockStartSeconds) &&
+                    Objects.equals(this.samplingClockStartNanos, that.samplingClockStartNanos) &&
+                    Objects.equals(this.samplingClockPeriodNanos, that.samplingClockPeriodNanos) &&
+                    Objects.equals(this.samplingClockCount, that.samplingClockCount) &&
+                    Objects.equals(this.columnNames, that.columnNames) &&
+                    Objects.equals(this.dataType, that.dataType) &&
+                    Objects.equals(this.values, that.values) &&
+                    Objects.equals(this.valuesStatus, that.valuesStatus) &&
+                    this.useSerializedDataColumns == that.useSerializedDataColumns &&
+                    Objects.equals(this.dataColumnList, that.dataColumnList) &&
+                    Objects.equals(this.doubleColumnList, that.doubleColumnList);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(providerId, requestId, timestampsSecondsList, timestampNanosList, samplingClockStartSeconds, samplingClockStartNanos, samplingClockPeriodNanos, samplingClockCount, columnNames, dataType, values, valuesStatus, useSerializedDataColumns, dataColumnList, doubleColumnList);
+        }
+
+        @Override
+        public String toString() {
+            return "IngestionRequestParams[" +
+                    "providerId=" + providerId + ", " +
+                    "requestId=" + requestId + ", " +
+                    "timestampsSecondsList=" + timestampsSecondsList + ", " +
+                    "timestampNanosList=" + timestampNanosList + ", " +
+                    "samplingClockStartSeconds=" + samplingClockStartSeconds + ", " +
+                    "samplingClockStartNanos=" + samplingClockStartNanos + ", " +
+                    "samplingClockPeriodNanos=" + samplingClockPeriodNanos + ", " +
+                    "samplingClockCount=" + samplingClockCount + ", " +
+                    "columnNames=" + columnNames + ", " +
+                    "dataType=" + dataType + ", " +
+                    "values=" + values + ", " +
+                    "valuesStatus=" + valuesStatus + ", " +
+                    "useSerializedDataColumns=" + useSerializedDataColumns + ", " +
+                    "dataColumnList=" + dataColumnList + ", " +
+                    "doubleColumnList=" + doubleColumnList + ']';
+        }
+
+        }
 
     /**
      * Builds an IngestDataRequest API object from an IngestionRequestParams object.

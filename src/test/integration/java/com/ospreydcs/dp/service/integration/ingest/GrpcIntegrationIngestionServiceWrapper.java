@@ -700,7 +700,7 @@ public class GrpcIntegrationIngestionServiceWrapper extends GrpcIntegrationServi
                             IngestionTestBase.IngestionDataType.DOUBLE,
                             columnValues,
                             null, columnInfo.useSerializedDataColumns,
-                            null, null);
+                            null);
             paramsList.add(params);
 
             final Instant startTimeInstant = Instant.ofEpochSecond(currentSeconds, startNanos);

@@ -84,7 +84,7 @@ public class QueryDataValueStatusIT extends GrpcIntegrationTestBase {
                             columnNames,
                             IngestionTestBase.IngestionDataType.DOUBLE,
                             values,
-                            valuesStatus, false, null, null);
+                            valuesStatus, false, null);
             final IngestDataRequest request = IngestionTestBase.buildIngestionRequest(params);
             paramsList.add(params);
             requestList.add(request);
@@ -120,7 +120,7 @@ public class QueryDataValueStatusIT extends GrpcIntegrationTestBase {
                             columnNames,
                             IngestionTestBase.IngestionDataType.DOUBLE,
                             values,
-                            valuesStatus, false, null, null);
+                            valuesStatus, false, null);
             final IngestDataRequest request = IngestionTestBase.buildIngestionRequest(params);
             paramsList.add(params);
             requestList.add(request);
