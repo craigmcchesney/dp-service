@@ -283,6 +283,42 @@ Key parameters configured in benchmark classes:
 - **Test Naming**: Test classes typically named `<APIMethod>Test`
 - **Temporary Files**: Use `@Rule public TemporaryFolder tempFolder = new TemporaryFolder();` for test files
 
+### Ingestion Test Framework
+The ingestion test framework has been streamlined to support systematic addition of new protobuf column types with minimal boilerplate code.
+
+**Framework Components:**
+- **`IngestionTestBase.IngestionRequestParams`**: Simplified parameter object with dedicated fields for each column type
+- **`buildIngestionRequest()`**: Streamlined method that uses column lists from params object
+- **`GrpcIntegrationIngestionServiceWrapper.verifyIngestionRequestHandling()`**: Enhanced verification logic for all column types
+
+**Adding New Protobuf Column Types:**
+Follow this systematic 3-step process:
+1. **Add Parameter Field**: Add `List<NewColumnType>` field to `IngestionTestBase.IngestionRequestParams`
+2. **Update Request Builder**: Modify `buildIngestionRequest()` to include new columns in the `IngestDataRequest`
+3. **Add Verification Logic**: Extend `verifyIngestionRequestHandling()` with new column type verification
+
+**Verification Pattern:**
+The verification logic follows a consistent pattern for each column type:
+- Retrieve `DataColumnDocument` from stored `BucketDocument`
+- Convert document to corresponding protobuf column using `toProtobufColumn()`
+- Match protobuf column against original columns from the request's column list
+- Verify data integrity through protobuf round-trip comparison
+
+**Example Verification Flow:**
+```java
+// For DoubleColumn verification:
+DataColumnDocument dataColumnDocument = bucketDocument.getDataColumnDocument();
+DoubleColumn storedColumn = (DoubleColumn) dataColumnDocument.toProtobufColumn();
+// Find matching column from request.getDoubleColumnsList()
+// Verify storedColumn matches original request data
+```
+
+**Benefits:**
+- **Systematic**: Same 3-step pattern for every new column type
+- **Comprehensive**: Tests full ingestion pipeline from request → storage → retrieval
+- **Maintainable**: Centralized verification logic in wrapper class
+- **Extensible**: Easy to add new column types without modifying existing test infrastructure
+
 ### Ingestion Validation Test Coverage
 - **Test Location**: `IngestionValidationUtilityTest` (22 test cases)
 - **Legacy Validation**: Provider ID, request ID, DataColumn validation (6 tests)
