@@ -191,7 +191,7 @@ public class DataExportHdf5File implements BucketedDataExportFileInterface {
         Objects.requireNonNull(bucketDocument.getDataColumn());
 
         // TODO: this will probably need help with the new ColumnDocumentBase hierarchy, e.g., does byte format make sense for all the subclasses?  How does the hdf5 user distinguish the type of the binary column payload?
-        final byte[] dataColumnBytes = bucketDocument.getDataColumn().getBytes();
+        final byte[] dataColumnBytes = bucketDocument.getDataColumn().toByteArray();
 
         Objects.requireNonNull(dataColumnBytes);
         final String columnDataPath = pvTimesSecondsNanosGroup + PATH_SEPARATOR + DATA_COLUMN_BYTES;
@@ -346,7 +346,7 @@ public class DataExportHdf5File implements BucketedDataExportFileInterface {
                         writer.writeString(columnNamePath, columnName);
 
                         // write serialized dataColumnBytes
-                        final byte[] dataColumnBytes = calculationsDataColumnDocument.getBytes();
+                        final byte[] dataColumnBytes = calculationsDataColumnDocument.toByteArray();
                         Objects.requireNonNull(dataColumnBytes);
                         final String dataColumnBytesPath = dataColumnGroup
                                 + PATH_SEPARATOR

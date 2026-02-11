@@ -7,6 +7,9 @@ import com.ospreydcs.dp.grpc.v1.ingestion.*;
 import com.ospreydcs.dp.service.common.bson.ProviderDocument;
 import com.ospreydcs.dp.service.common.bson.RequestStatusDocument;
 import com.ospreydcs.dp.service.common.bson.bucket.BucketDocument;
+import com.ospreydcs.dp.service.common.bson.column.ColumnDocumentBase;
+import com.ospreydcs.dp.service.common.bson.column.DataColumnDocument;
+import com.ospreydcs.dp.service.common.bson.column.DoubleColumnDocument;
 import com.ospreydcs.dp.service.common.config.ConfigurationManager;
 import com.ospreydcs.dp.service.common.exception.DpException;
 import com.ospreydcs.dp.service.common.model.TimestampMap;
@@ -357,7 +360,20 @@ public class GrpcIntegrationIngestionServiceWrapper extends GrpcIntegrationServi
 
     }
 
-    protected List<BucketDocument> verifyIngestionHandling(
+    /**
+     * Verifies ingestion handling for the provided (parallel-indexed) lists of params and requests. The requests were
+     * sent via a streaming API, which resulted in the single API response. Delegates verifying handling of individual
+     * ingestion requests to verifyIngestionRequestHandling().
+     *
+     * @param paramsList
+     * @param requestList
+     * @param response
+     * @param numSerializedDataColumnsExpected
+     * @param expectReject
+     * @param expectedRejectMessage
+     * @return
+     */
+    protected List<BucketDocument> verifyIngestionStreamHandling(
             List<IngestionTestBase.IngestionRequestParams> paramsList,
             List<IngestDataRequest> requestList,
             IngestDataStreamResponse response,
@@ -387,13 +403,25 @@ public class GrpcIntegrationIngestionServiceWrapper extends GrpcIntegrationServi
                 final IngestDataRequest request = requestList.get(listIndex);
 
                 // verify database contents (request status and corresponding bucket documents)
-                bucketDocumentList.addAll(verifyIngestionHandling(params, request, numSerializedDataColumnsExpected));
+                bucketDocumentList.addAll(verifyIngestionRequestHandling(
+                        params, request, numSerializedDataColumnsExpected));
             }
         }
 
         return bucketDocumentList;
     }
 
+    /**
+     * Verifies that ingestion handling is successful for the supplied lists of params, requests, and responses.
+     * Those lists use parallel indexing to get the corresponding params, request, and response for each request in the
+     * list.  Delegates verifying individual request handling to verifyIngestionRequestHandling().
+     *
+     * @param paramsList 
+     * @param requestList
+     * @param responseList
+     * @param numSerializedDataColumnsExpected
+     * @return
+     */
     protected List<BucketDocument> verifyIngestionHandling(
             List<IngestionTestBase.IngestionRequestParams> paramsList,
             List<IngestDataRequest> requestList,
@@ -422,13 +450,26 @@ public class GrpcIntegrationIngestionServiceWrapper extends GrpcIntegrationServi
             assertEquals((int) params.samplingClockCount(), ackResult.getNumRows());
 
             // verify database contents (request status and corresponding bucket documents)
-            bucketDocumentList.addAll(verifyIngestionHandling(params, request, numSerializedDataColumnsExpected));
+            bucketDocumentList.addAll(verifyIngestionRequestHandling(params, request, numSerializedDataColumnsExpected));
         }
 
         return bucketDocumentList;
     }
 
-    protected List<BucketDocument> verifyIngestionHandling(
+    /**
+     * Verifies ingestion handling for the supplied params object and the corresponding request.  First finds the
+     * RequestStatusDocument for the request and checks that it was successful.  Then looks for BucketDocuments in
+     * Mongo with the ids expected for the request.  For each BucketDocument, confirms that metadata is correct and
+     * verifies that column data matches the corresponding request column.  Convert's the BucketDocument's dataColumn to
+     * the corresponding protobuf column type for that column and then uses the protobuf column class's equals()
+     * method to compare the request column with the bucket document column, which compares both column name and values.
+     * 
+     * @param params 
+     * @param request
+     * @param numSerializedDataColumnsExpected
+     * @return
+     */
+    protected List<BucketDocument> verifyIngestionRequestHandling(
             IngestionTestBase.IngestionRequestParams params,
             IngestDataRequest request,
             int numSerializedDataColumnsExpected
@@ -486,16 +527,6 @@ public class GrpcIntegrationIngestionServiceWrapper extends GrpcIntegrationServi
             assertEquals(
                     (int) params.samplingClockCount(),
                     bucketDocument.getDataTimestamps().getSampleCount());
-            DataColumn bucketDataColumn = null;
-            try {
-                bucketDataColumn = bucketDocument.getDataColumn().toDataColumn();
-            } catch (DpException e) {
-                throw new RuntimeException(e);
-            }
-            Objects.requireNonNull(bucketDataColumn);
-            assertEquals(
-                    (int) params.samplingClockCount(),
-                    bucketDataColumn.getDataValuesList().size());
 
             // check DataTimestamps (TimestampsList or SamplingClock depending on request)
             DataTimestamps bucketDataTimestamps = null;
@@ -555,29 +586,54 @@ public class GrpcIntegrationIngestionServiceWrapper extends GrpcIntegrationServi
                     Date.from(Instant.ofEpochSecond(endSeconds, endNanos)),
                     bucketDocument.getDataTimestamps().getLastTime().getDateTime());
 
-            // compare data value vectors
-            DataColumn requestDataColumn = null;
-
             if (params.useSerializedDataColumns()) {
                 // request contains SerializedDataColumns
                 final List<SerializedDataColumn> serializedDataColumnList =
                         request.getIngestionDataFrame().getSerializedDataColumnsList();
+
+                // compare data value vectors
+                DataColumn requestDataColumn = null;
+                DataColumn bucketDataColumn = null;
+                try {
+                    bucketDataColumn = bucketDocument.getDataColumn().toDataColumn();
+                } catch (DpException e) {
+                    throw new RuntimeException(e);
+                }
+                Objects.requireNonNull(bucketDataColumn);
+                assertEquals(
+                        (int) params.samplingClockCount(),
+                        bucketDataColumn.getDataValuesList().size());
+
                 final SerializedDataColumn serializedDataColumn = serializedDataColumnList.get(pvIndex);
                 // deserialize column for comparison
                 try {
                     requestDataColumn = DataColumn.parseFrom(serializedDataColumn.getPayload());
+                    // this compares each DataValue including ValueStatus, confirmed in debugger
+                    assertEquals(requestDataColumn, bucketDataColumn);
                 } catch (InvalidProtocolBufferException e) {
                     fail("exception deserializing DataColumn: " + e.getMessage());
                 }
                 serializedDataColumnCount = serializedDataColumnCount + 1;
 
             } else {
-                // request contains regular DataColumns
-                final List<DataColumn> dataColumnList = request.getIngestionDataFrame().getDataColumnsList();
-                requestDataColumn = dataColumnList.get(pvIndex);
+                // verify data column content for supported column data types
+                ColumnDocumentBase columnDocument = bucketDocument.getDataColumn();
+
+                // Convert columnDocument to protobuf column format and match it against appropriate column type
+                // from request. This finds a match using equals() for the protobuf column type, which compares the
+                // column name and the column values (confirmed in debugger).
+                if (columnDocument instanceof DataColumnDocument) {
+                    assertTrue(
+                            request.getIngestionDataFrame().getDataColumnsList().contains(
+                                    (DataColumn) columnDocument.toProtobufColumn()));
+                } else if (columnDocument instanceof DoubleColumnDocument) {
+                    assertTrue(
+                            request.getIngestionDataFrame().getDoubleColumnsList().contains(
+                                    (DoubleColumn) columnDocument.toProtobufColumn()));
+                } else {
+                    fail("unexpected columnDocument type: " + columnDocument);
+                }
             }
-            // this compares each DataValue including ValueStatus, confirmed in debugger
-            assertEquals(requestDataColumn, bucketDataColumn);
 
             pvIndex = pvIndex + 1;
         }
@@ -608,7 +664,7 @@ public class GrpcIntegrationIngestionServiceWrapper extends GrpcIntegrationServi
 
         // send request
         final IngestDataStreamResponse response = sendIngestDataStream(requestList);
-        return verifyIngestionHandling(
+        return verifyIngestionStreamHandling(
                 paramsList,
                 requestList,
                 response,

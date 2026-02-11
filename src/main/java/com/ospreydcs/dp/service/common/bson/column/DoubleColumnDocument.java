@@ -25,8 +25,8 @@ public class DoubleColumnDocument extends ScalarColumnDocumentBase<Double> {
     }
 
     @Override
-    protected void addAllValuesToBuilder(Message.Builder builder, List<Double> values) {
-        ((DoubleColumn.Builder) builder).addAllValues(values);
+    protected void addAllValuesToBuilder(Message.Builder builder) {
+        ((DoubleColumn.Builder) builder).addAllValues(this.getValues());
     }
 
     @Override

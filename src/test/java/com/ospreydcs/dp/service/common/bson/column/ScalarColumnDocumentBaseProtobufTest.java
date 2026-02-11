@@ -90,9 +90,9 @@ public class ScalarColumnDocumentBaseProtobufTest {
     }
 
     @Test
-    public void testGetBytesUsesToProtobufColumn() {
-        // Test that getBytes() uses toProtobufColumn() internally
-        byte[] bytes = doubleColumnDocument.getBytes();
+    public void testToByteArrayUsesToProtobufColumn() {
+        // Test that toByteArray() uses toProtobufColumn() internally
+        byte[] bytes = doubleColumnDocument.toByteArray();
         
         assertNotNull("Bytes should not be null", bytes);
         assertTrue("Bytes should not be empty", bytes.length > 0);

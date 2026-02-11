@@ -79,8 +79,8 @@ public class ScalarColumnDocumentBaseTest {
     }
 
     @Test
-    public void testGetBytes() {
-        byte[] bytes = document.getBytes();
+    public void testToByteArray() {
+        byte[] bytes = document.toByteArray();
         assertNotNull(bytes);
         assertTrue(bytes.length > 0);
     }

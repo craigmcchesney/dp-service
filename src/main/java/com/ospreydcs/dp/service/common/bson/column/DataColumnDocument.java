@@ -2,10 +2,8 @@ package com.ospreydcs.dp.service.common.bson.column;
 
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
-import com.ospreydcs.dp.grpc.v1.common.DataBucket;
-import com.ospreydcs.dp.grpc.v1.common.DataColumn;
-import com.ospreydcs.dp.grpc.v1.common.DataValue;
-import com.ospreydcs.dp.grpc.v1.common.SerializedDataColumn;
+import com.google.protobuf.Message;
+import com.ospreydcs.dp.grpc.v1.common.*;
 import com.ospreydcs.dp.service.common.exception.DpException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -50,6 +48,20 @@ public class DataColumnDocument extends ColumnDocumentBase {
         this.bytes = dataColumn.toByteArray();
     }
 
+    @Override
+    protected Message.Builder createColumnBuilder() {
+        return DataColumn.newBuilder();
+    }
+
+    @Override
+    protected void addAllValuesToBuilder(Message.Builder builder) {
+        try {
+            ((DataColumn.Builder) builder).mergeFrom(DataColumn.parseFrom(this.bytes));
+        } catch (InvalidProtocolBufferException e) {
+            logger.error("protobuf parsing error", e);
+        }
+    }
+
     public static DataColumnDocument fromDataColumn(DataColumn requestDataColumn) {
         DataColumnDocument document = new DataColumnDocument();
         document.setName(requestDataColumn.getName());
@@ -92,7 +104,7 @@ public class DataColumnDocument extends ColumnDocumentBase {
     public SerializedDataColumn toSerializedDataColumn() throws DpException {
         final SerializedDataColumn.Builder serializedDataColumnBuilder = SerializedDataColumn.newBuilder();
         if (this.bytes != null) {
-            serializedDataColumnBuilder.setPayload(ByteString.copyFrom(this.getBytes()));
+            serializedDataColumnBuilder.setPayload(ByteString.copyFrom(this.toByteArray()));
         }
         serializedDataColumnBuilder.setName(this.getName());
         return serializedDataColumnBuilder.build();
