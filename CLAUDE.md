@@ -130,6 +130,7 @@ public class TypeColumnDocument extends ScalarColumnDocumentBase<JavaType> {
 - `toDataColumn()` - Converts to legacy DataColumn with DataValue objects
 - `getBytes()` - Serializes protobuf column to byte array
 - `toProtobufColumn()` - Template method for creating typed protobuf column
+- `addColumnToBucket()` - Abstract method implementation for query result API integration
 
 ## Export Framework Architecture
 The Annotation Service includes a sophisticated export framework:
@@ -292,10 +293,23 @@ The ingestion test framework has been streamlined to support systematic addition
 - **`GrpcIntegrationIngestionServiceWrapper.verifyIngestionRequestHandling()`**: Enhanced verification logic for all column types
 
 **Adding New Protobuf Column Types:**
-Follow this systematic 3-step process:
+Follow this systematic 3-step process for both implementation and testing:
+
+**Implementation Steps:**
+1. **Create Document Class**: Implement `ScalarColumnDocumentBase<T>` with `addColumnToBucket()` method
+2. **Add Ingestion Handling**: Update ingestion pipeline to handle new column type
+3. **Query Integration**: The `addColumnToBucket()` implementation automatically enables query result API
+
+**Testing Steps:**
 1. **Add Parameter Field**: Add `List<NewColumnType>` field to `IngestionTestBase.IngestionRequestParams`
 2. **Update Request Builder**: Modify `buildIngestionRequest()` to include new columns in the `IngestDataRequest`
-3. **Add Verification Logic**: Extend `verifyIngestionRequestHandling()` with new column type verification
+3. **Add Verification Logic**: Extend `GrpcIntegrationIngestionServiceWrapper.verifyIngestionRequestHandling()` with new column type verification
+
+**Query API Integration:**
+New protobuf column types automatically work in query results through the `addColumnToBucket()` method:
+- No additional query API code required
+- Document classes implement abstract `addColumnToBucket()` from `ColumnDocumentBase`
+- Query results assemble `DataBucket` using column-specific `addColumnToBucket()` implementations
 
 **Verification Pattern:**
 The verification logic follows a consistent pattern for each column type:
@@ -327,10 +341,17 @@ DoubleColumn storedColumn = (DoubleColumn) dataColumnDocument.toProtobufColumn()
 - **Error Message Testing**: Validates detailed field paths and constraint violations
 - **Boundary Testing**: String length limits, array dimension limits, timestamp ordering
 
-### Scalar Column Document Test Coverage
+### V2 API Integration Test Coverage
+- **Test Location**: `src/test/java/com/ospreydcs/dp/service/integration/v2api/`
+- **Naming Convention**: `<ColumnType>IT` (e.g., `DoubleColumnIT`)
+- **Comprehensive Coverage**: Each test class covers ingestion, query, and subscription APIs for one column type
+- **Query API Integration**: Tests verify `addColumnToBucket()` method implementation for query result assembly
+- **Framework Pattern**: Same integration test structure applies to scalar and complex column types
+
+### Scalar Column Document Test Coverage  
 - **Unit Tests**: `ScalarColumnDocumentBaseTest` - Basic functionality of generic base class
 - **Protobuf Conversion Tests**: `ScalarColumnDocumentBaseProtobufTest` (7 test cases)
-- **Integration Tests**: `IngestDataDoubleColumnIT` - End-to-end DoubleColumn ingestion pipeline
+- **Integration Tests**: `integration/v2api/DoubleColumnIT` - End-to-end DoubleColumn pipeline (ingestion, query, subscription)
 
 **ScalarColumnDocumentBaseProtobufTest Coverage:**
 - **Core Functionality**: Document → protobuf conversion via `toProtobufColumn()`

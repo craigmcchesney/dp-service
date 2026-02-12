@@ -498,7 +498,7 @@ public class GrpcIntegrationQueryServiceWrapper extends GrpcIntegrationServiceWr
         return responseObserver.getDataBucketList();
     }
 
-    protected List<DataBucket> queryData(
+    public List<DataBucket> queryData(
             QueryTestBase.QueryDataRequestParams params,
             boolean expectReject,
             String expectedRejectMessage
