@@ -520,25 +520,11 @@ public class IngestionServiceImpl extends DpIngestionServiceGrpc.DpIngestionServ
     }
 
     private static SubscribeDataResponse subscribeDataResponse(
-            DataTimestamps dataTimestamps,
-            List<DataColumn> dataColumns
+            DataFrame dataFrame
     ) {
         final SubscribeDataResponse.SubscribeDataResult result =
                 SubscribeDataResponse.SubscribeDataResult.newBuilder()
-                        .setDataTimestamps(dataTimestamps)
-                        .addAllDataColumns(dataColumns)
-                        .build();
-        return subscribeDataResponse(result);
-    }
-
-    private static SubscribeDataResponse subscribeDataResponseSerializedColumns(
-            DataTimestamps dataTimestamps,
-            List<SerializedDataColumn> serializedDataColumns
-    ) {
-        final SubscribeDataResponse.SubscribeDataResult result =
-                SubscribeDataResponse.SubscribeDataResult.newBuilder()
-                        .setDataTimestamps(dataTimestamps)
-                        .addAllSerializedDataColumns(serializedDataColumns)
+                        .setDataFrame(dataFrame)
                         .build();
         return subscribeDataResponse(result);
     }
@@ -565,22 +551,10 @@ public class IngestionServiceImpl extends DpIngestionServiceGrpc.DpIngestionServ
     }
 
     public static void sendSubscribeDataResponse(
-            DataTimestamps dataTimestamps,
-            List<DataColumn> dataColumns,
+            DataFrame dataFrame,
             StreamObserver<SubscribeDataResponse> responseObserver
     ) {
-        final SubscribeDataResponse response
-                = subscribeDataResponse(dataTimestamps, dataColumns);
-        responseObserver.onNext(response);
-    }
-
-    public static void sendSubscribeDataResponseSerializedColumns(
-            DataTimestamps dataTimestamps,
-            List<SerializedDataColumn> serializedDataColumns,
-            StreamObserver<SubscribeDataResponse> responseObserver
-    ) {
-        final SubscribeDataResponse response
-                = subscribeDataResponseSerializedColumns(dataTimestamps, serializedDataColumns);
+        final SubscribeDataResponse response = subscribeDataResponse(dataFrame);
         responseObserver.onNext(response);
     }
 

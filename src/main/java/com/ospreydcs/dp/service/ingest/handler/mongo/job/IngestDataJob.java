@@ -17,6 +17,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class IngestDataJob extends HandlerJob {
 
@@ -53,6 +54,7 @@ public class IngestDataJob extends HandlerJob {
         boolean isError = false;
         String errorMsg = "";
         List<String> idsCreated = new ArrayList<>();
+        Set<String> requestPvs = new HashSet<>();
 
         // validate providerId by getting providerName
         String providerName = mongoClient.providerNameForId(request.getProviderId());
@@ -87,6 +89,11 @@ public class IngestDataJob extends HandlerJob {
                     // add the batch to mongo and handle result
                     IngestionTaskResult ingestionTaskResult =
                             mongoClient.insertBatch(request, dataDocumentBatch);
+
+                    // collect a set of PV names in the request's BucketDocuments
+                    requestPvs = dataDocumentBatch.stream()
+                            .map(BucketDocument::getPvName)
+                            .collect(Collectors.toSet());
 
                     if (ingestionTaskResult.isError) {
                         isError = true;
@@ -155,8 +162,8 @@ public class IngestDataJob extends HandlerJob {
         }
 
         // publish request PV data to subscribeData() subscribers
-        if (! isError) {
-            handler.getSourceMonitorPublisher().publishDataSubscriptions(request);
+        if (! isError && requestPvs.size() > 0) {
+            handler.getSourceMonitorPublisher().publishDataSubscriptions(request, requestPvs);
         }
 
         return new HandlerIngestionResult(isError, errorMsg);

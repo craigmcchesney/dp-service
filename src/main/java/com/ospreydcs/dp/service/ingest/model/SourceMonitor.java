@@ -1,6 +1,7 @@
 package com.ospreydcs.dp.service.ingest.model;
 
 import com.ospreydcs.dp.grpc.v1.common.DataColumn;
+import com.ospreydcs.dp.grpc.v1.common.DataFrame;
 import com.ospreydcs.dp.grpc.v1.common.DataTimestamps;
 import com.ospreydcs.dp.grpc.v1.common.SerializedDataColumn;
 import com.ospreydcs.dp.grpc.v1.ingestion.SubscribeDataResponse;
@@ -38,38 +39,20 @@ public class SourceMonitor {
         this.responseObserver = responseObserver;
     }
 
-    public void publishDataColumns(
+    public void publishDataFrame(
             final String pvName,
-            final DataTimestamps requestDataTimestamps,
-            final List<DataColumn> responseDataColumns
+            DataFrame dataFrame
     ) {
         if (!safeToSendResponse()) {
             return;
         }
 
         logger.debug(
-                "publishing DataColumns for id: {} pv: {}",
+                "publishing DataFrame for id: {} pv: {}",
                 responseObserver.hashCode(),
                 pvName);
         IngestionServiceImpl.sendSubscribeDataResponse(
-                requestDataTimestamps, responseDataColumns, responseObserver);
-    }
-
-    public void publishSerializedDataColumns(
-            final String pvName,
-            final DataTimestamps requestDataTimestamps,
-            final List<SerializedDataColumn> responseSerializedColumns
-    ) {
-        if (!safeToSendResponse()) {
-            return;
-        }
-
-        logger.debug(
-                "publishing SerializedDataColumns for id: {} pv: {}",
-                responseObserver.hashCode(),
-                pvName);
-        IngestionServiceImpl.sendSubscribeDataResponseSerializedColumns(
-                requestDataTimestamps, responseSerializedColumns, responseObserver);
+                dataFrame, responseObserver);
     }
 
     public void handleReject(String errorMsg) {

@@ -553,23 +553,23 @@ public class EventMonitor {
     private void handleSubscribeDataResult(SubscribeDataResponse.SubscribeDataResult result) {
 
         // Handle each DataColumn from result.  A PV might be treated as both a trigger and target PV.
-        for (DataColumn dataColumn : result.getDataColumnsList()) {
+        for (DataColumn dataColumn : result.getDataFrame().getDataColumnsList()) {
             final String columnName = dataColumn.getName();
 
             // handle trigger PVs immediately
             final PvConditionTrigger pvConditionTrigger = pvTriggerMap.get(columnName);
             if (pvConditionTrigger != null) {
-                handleTriggerPVData(pvConditionTrigger, dataColumn, result.getDataTimestamps());
+                handleTriggerPVData(pvConditionTrigger, dataColumn, result.getDataFrame().getDataTimestamps());
             }
 
             // Buffer the data for target PVs instead of processing immediately
             if (targetPvNames().contains(columnName)) {
-                bufferManager.bufferData(columnName, dataColumn, result.getDataTimestamps());
+                bufferManager.bufferData(columnName, dataColumn, result.getDataFrame().getDataTimestamps());
             }
         }
 
         // Handle each SerializedDataColumn from result.  A PV might be treated as both a trigger and target PV.
-        for (SerializedDataColumn serializedDataColumn : result.getSerializedDataColumnsList()) {
+        for (SerializedDataColumn serializedDataColumn : result.getDataFrame().getSerializedDataColumnsList()) {
             final String columnName = serializedDataColumn.getName();
 
             // handle trigger PVs immediately
@@ -584,12 +584,13 @@ public class EventMonitor {
                     handleError(errorMsg);
                     return;
                 }
-                handleTriggerPVData(pvConditionTrigger, dataColumn, result.getDataTimestamps());
+                handleTriggerPVData(pvConditionTrigger, dataColumn, result.getDataFrame().getDataTimestamps());
             }
 
             // Buffer the data for target PVs instead of processing immediately.
             if (targetPvNames().contains(columnName)) {
-                bufferManager.bufferSerializedData(columnName, serializedDataColumn, result.getDataTimestamps());
+                bufferManager.bufferSerializedData(
+                        columnName, serializedDataColumn, result.getDataFrame().getDataTimestamps());
             }
         }
     }

@@ -1088,21 +1088,21 @@ public class GrpcIntegrationIngestionServiceWrapper extends GrpcIntegrationServi
 
             assertTrue(response.hasSubscribeDataResult());
             final SubscribeDataResponse.SubscribeDataResult responseResult = response.getSubscribeDataResult();
-            final DataTimestamps responseDataTimestamps = responseResult.getDataTimestamps();
+            final DataTimestamps responseDataTimestamps = responseResult.getDataFrame().getDataTimestamps();
             final DataTimestampsUtility.DataTimestampsModel responseTimestampsModel = 
                     new DataTimestampsUtility.DataTimestampsModel(responseDataTimestamps);
             final long responseSeconds = responseTimestampsModel.getFirstTimestamp().getEpochSeconds();
             final long responseNanos = responseTimestampsModel.getFirstTimestamp().getNanoseconds();
 
             // add entries to pvTimestampColumnMap for regular DataColumns in response
-            for (DataColumn dataColumn : responseResult.getDataColumnsList()) {
+            for (DataColumn dataColumn : responseResult.getDataFrame().getDataColumnsList()) {
                 addPvTimestampColumnMapEntry(
                         pvTimestampColumnMap, responseSeconds, responseNanos, dataColumn, false);
                 responseColumnCount = responseColumnCount + 1;
             }
 
             // add entries to pvTimestampColumnMap for SerializedDataColumns in response
-            for (SerializedDataColumn serializedDataColumn : responseResult.getSerializedDataColumnsList()) {
+            for (SerializedDataColumn serializedDataColumn : responseResult.getDataFrame().getSerializedDataColumnsList()) {
                 DataColumn deserializedDataColumn = null;
                 try {
                     deserializedDataColumn = DataColumn.parseFrom(serializedDataColumn.getPayload());

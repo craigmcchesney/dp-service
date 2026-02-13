@@ -95,19 +95,16 @@ public class SourceMonitorManager {
      * between calling threads (e.g., workers processing ingestion requests).
      * @param request
      */
-    public void publishDataSubscriptions(IngestDataRequest request) {
+    public void publishDataSubscriptions(IngestDataRequest request, Set<String> requestPvs) {
 
         if (shutdownRequested.get()) {
             return;
         }
 
-        final DataTimestamps requestDataTimestamps = request.getIngestionDataFrame().getDataTimestamps();
+        // iterate through request PVs, publish request data to subscribers
+        for (String pvName : requestPvs) {
 
-        // publish regular DataColumns in request that have subscribers
-        for (DataColumn requestDataColumn : request.getIngestionDataFrame().getDataColumnsList()) {
-            final String pvName = requestDataColumn.getName();
-
-            // acquire readLock only long enough to read local data structure
+            // acquire readLock only long enough to read local data structure with subscription monitors for specified PV
             readLock.lock();
             List<SourceMonitor> sourceMonitorsCopy;
             try {
@@ -118,35 +115,10 @@ public class SourceMonitorManager {
                 readLock.unlock();
             }
 
-            // publish data via monitors
-            final List<DataColumn> responseDataColumns = List.of(requestDataColumn);
+            // publish request data to subscribers for PV
             for (SourceMonitor monitor : sourceMonitorsCopy) {
                 // publish data to subscriber if response stream is active
-                monitor.publishDataColumns(pvName, requestDataTimestamps, responseDataColumns);
-            }
-        }
-
-        // publish SerializedDataColumns in request that have subscribers
-        for (SerializedDataColumn requestSerializedColumn : request.getIngestionDataFrame().getSerializedDataColumnsList()) {
-
-            final String pvName = requestSerializedColumn.getName();
-
-            // acquire readLock only long enough to read local data structure
-            readLock.lock();
-            List<SourceMonitor> sourceMonitorsCopy;
-            try {
-                final List<SourceMonitor> sourceMonitors = subscriptionMap.get(pvName);
-                sourceMonitorsCopy =
-                        (sourceMonitors == null) ? new ArrayList<>() : new ArrayList<>(sourceMonitors);
-            } finally {
-                readLock.unlock();
-            }
-
-            // publish data via monitors
-            final List<SerializedDataColumn> responseSerializedColumns = List.of(requestSerializedColumn);
-            for (SourceMonitor monitor : sourceMonitorsCopy) {
-                // publish data to subscriber if response stream is active
-                monitor.publishSerializedDataColumns(pvName, requestDataTimestamps, responseSerializedColumns);
+                monitor.publishDataFrame(pvName, request.getIngestionDataFrame());
             }
         }
     }

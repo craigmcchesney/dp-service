@@ -1,10 +1,6 @@
 package com.ospreydcs.dp.service.ingestionstream.handler;
 
-import com.ospreydcs.dp.grpc.v1.common.DataColumn;
-import com.ospreydcs.dp.grpc.v1.common.DataTimestamps;
-import com.ospreydcs.dp.grpc.v1.common.DataValue;
-import com.ospreydcs.dp.grpc.v1.common.SamplingClock;
-import com.ospreydcs.dp.grpc.v1.common.Timestamp;
+import com.ospreydcs.dp.grpc.v1.common.*;
 import com.ospreydcs.dp.grpc.v1.ingestion.SubscribeDataResponse;
 import com.ospreydcs.dp.service.ingestionstream.handler.monitor.DataBuffer;
 import org.junit.Before;
@@ -34,8 +30,8 @@ public class DataBufferTest {
     public void testAgeBasedFlushing() throws InterruptedException {
         // Create test data
         SubscribeDataResponse.SubscribeDataResult testResult = createTestResult("test-pv", "test-value");
-        DataColumn testColumn = testResult.getDataColumns(0);
-        DataTimestamps testTimestamps = testResult.getDataTimestamps();
+        DataColumn testColumn = testResult.getDataFrame().getDataColumns(0);
+        DataTimestamps testTimestamps = testResult.getDataFrame().getDataTimestamps();
         
         // Add data to buffer
         dataBuffer.addData(testColumn, testTimestamps);
@@ -62,14 +58,14 @@ public class DataBufferTest {
     public void testPartialFlushingByAge() throws InterruptedException {
         // Add first item
         SubscribeDataResponse.SubscribeDataResult result1 = createTestResult("test-pv", "value1");
-        dataBuffer.addData(result1.getDataColumns(0), result1.getDataTimestamps());
+        dataBuffer.addData(result1.getDataFrame().getDataColumns(0), result1.getDataFrame().getDataTimestamps());
         
         // Wait for first item to age
         Thread.sleep(600);
         
         // Add second item (should not be aged yet)
         SubscribeDataResponse.SubscribeDataResult result2 = createTestResult("test-pv", "value2");
-        dataBuffer.addData(result2.getDataColumns(0), result2.getDataTimestamps());
+        dataBuffer.addData(result2.getDataFrame().getDataColumns(0), result2.getDataFrame().getDataTimestamps());
         
         // Should have 1 item ready to flush (the aged one)
         assertEquals(1, dataBuffer.getItemsReadyToFlush());
@@ -90,8 +86,8 @@ public class DataBufferTest {
         // Add multiple items with recent timestamps (both younger than maxItemAge)
         SubscribeDataResponse.SubscribeDataResult result1 = createTestResultWithTimestamp("test-pv", "value1", now - 100);
         SubscribeDataResponse.SubscribeDataResult result2 = createTestResultWithTimestamp("test-pv", "value2", now - 200);
-        dataBuffer.addData(result1.getDataColumns(0), result1.getDataTimestamps());
-        dataBuffer.addData(result2.getDataColumns(0), result2.getDataTimestamps());
+        dataBuffer.addData(result1.getDataFrame().getDataColumns(0), result1.getDataFrame().getDataTimestamps());
+        dataBuffer.addData(result2.getDataFrame().getDataColumns(0), result2.getDataFrame().getDataTimestamps());
         
         // Force flush all items regardless of age
         List<DataBuffer.BufferedData> flushedResults = dataBuffer.forceFlushAll();
@@ -127,10 +123,11 @@ public class DataBufferTest {
         DataTimestamps timestamps = DataTimestamps.newBuilder()
             .setSamplingClock(clock)
             .build();
+
+        DataFrame dataFrame = DataFrame.newBuilder().setDataTimestamps(timestamps).addDataColumns(dataColumn).build();
         
         return SubscribeDataResponse.SubscribeDataResult.newBuilder()
-            .setDataTimestamps(timestamps)
-            .addDataColumns(dataColumn)
+            .setDataFrame(dataFrame)
             .build();
     }
 }
