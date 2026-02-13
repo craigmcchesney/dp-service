@@ -1125,7 +1125,7 @@ public class GrpcIntegrationIngestionServiceWrapper extends GrpcIntegrationServi
             for (IngestDataRequest pvIngestionRequest : ingestionValidationMap.get(pvName).requestList) {
 
                 // check that pvTimestampColumnMap contains an entry for each PV column in request's data frame
-                final IngestDataRequest.IngestionDataFrame requestFrame = pvIngestionRequest.getIngestionDataFrame();
+                final DataFrame requestFrame = pvIngestionRequest.getIngestionDataFrame();
                 final DataTimestamps requestDataTimestamps = requestFrame.getDataTimestamps();
                 final DataTimestampsUtility.DataTimestampsModel requestTimestampsModel = 
                         new DataTimestampsUtility.DataTimestampsModel(requestDataTimestamps);

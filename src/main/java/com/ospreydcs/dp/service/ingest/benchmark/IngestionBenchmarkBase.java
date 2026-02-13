@@ -136,12 +136,12 @@ public abstract class IngestionBenchmarkBase {
     protected static abstract class IngestionTask implements Callable<IngestionTaskResult> {
 
         protected final IngestionTaskParams params;
-        protected final IngestDataRequest.IngestionDataFrame.Builder templdateDataFrameBuilder;
+        protected final DataFrame.Builder templdateDataFrameBuilder;
         protected final Channel channel;
 
         public IngestionTask(
                 IngestionTaskParams params,
-                IngestDataRequest.IngestionDataFrame.Builder templdateDataFrameBuilder,
+                DataFrame.Builder templdateDataFrameBuilder,
                 Channel channel) {
 
             this.params = params;
@@ -190,9 +190,9 @@ public abstract class IngestionBenchmarkBase {
      * @param params Benchmark task parameters including column data type
      * @return IngestionDataFrame builder with columns added using the appropriate strategy
      */
-    private static IngestDataRequest.IngestionDataFrame.Builder buildDataTableTemplate(IngestionTaskParams params) {
-        IngestDataRequest.IngestionDataFrame.Builder ingestionDataFrameBuilder =
-                IngestDataRequest.IngestionDataFrame.newBuilder();
+    private static DataFrame.Builder buildDataTableTemplate(IngestionTaskParams params) {
+        DataFrame.Builder ingestionDataFrameBuilder =
+                DataFrame.newBuilder();
 
         // Use strategy pattern to build columns based on the specified type
         ColumnBuilder columnBuilder = createColumnBuilder(params.columnDataType);
@@ -203,7 +203,7 @@ public abstract class IngestionBenchmarkBase {
     }
 
     protected static IngestDataRequest prepareIngestionRequest(
-            IngestDataRequest.IngestionDataFrame.Builder dataFrameBuilder,
+            DataFrame.Builder dataFrameBuilder,
             IngestionTaskParams params,
             Integer secondsOffset
     ) {
@@ -397,7 +397,7 @@ public abstract class IngestionBenchmarkBase {
 
     protected abstract IngestionTask newIngestionTask(
             IngestionTaskParams params,
-            IngestDataRequest.IngestionDataFrame.Builder templateDataTable,
+            DataFrame.Builder templateDataTable,
             Channel channel);
 
     private String registerProvider(String providerName, Channel channel) {
@@ -504,7 +504,7 @@ public abstract class IngestionBenchmarkBase {
                     providerId,
                     useTimestampList,
                     columnDataType);
-            IngestDataRequest.IngestionDataFrame.Builder templateDataTable = buildDataTableTemplate(params);
+            DataFrame.Builder templateDataTable = buildDataTableTemplate(params);
             IngestionTask task = newIngestionTask(params, templateDataTable, channel);
             taskList.add(task);
 

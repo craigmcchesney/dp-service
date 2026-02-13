@@ -2,7 +2,6 @@ package com.ospreydcs.dp.service.ingest.handler;
 
 import com.ospreydcs.dp.grpc.v1.common.*;
 import com.ospreydcs.dp.grpc.v1.ingestion.IngestDataRequest;
-import com.ospreydcs.dp.grpc.v1.ingestion.IngestDataRequest.IngestionDataFrame;
 import com.ospreydcs.dp.service.common.model.ResultStatus;
 import com.ospreydcs.dp.service.ingest.IngestionTestBase;
 import com.ospreydcs.dp.service.common.protobuf.TimestampUtility;
@@ -203,7 +202,7 @@ public class IngestionValidationUtilityTest extends IngestionTestBase {
                 .addAllValues(Arrays.asList(1.23, 4.56))
                 .build();
         
-        IngestionDataFrame frame = IngestionDataFrame.newBuilder()
+        DataFrame frame = DataFrame.newBuilder()
                 .setDataTimestamps(timestamps)
                 .addDoubleColumns(column)
                 .build();
@@ -239,7 +238,7 @@ public class IngestionValidationUtilityTest extends IngestionTestBase {
                 .addAllValues(Arrays.asList(1.23, 4.56)) // Only 2 values
                 .build();
         
-        IngestionDataFrame frame = IngestionDataFrame.newBuilder()
+        DataFrame frame = DataFrame.newBuilder()
                 .setDataTimestamps(timestamps)
                 .addDoubleColumns(column)
                 .build();
@@ -281,7 +280,7 @@ public class IngestionValidationUtilityTest extends IngestionTestBase {
                 .addValues(longString.toString())
                 .build();
         
-        IngestionDataFrame frame = IngestionDataFrame.newBuilder()
+        DataFrame frame = DataFrame.newBuilder()
                 .setDataTimestamps(timestamps)
                 .addStringColumns(column)
                 .build();
@@ -319,7 +318,7 @@ public class IngestionValidationUtilityTest extends IngestionTestBase {
                 .addValues(0)
                 .build();
         
-        IngestionDataFrame frame = IngestionDataFrame.newBuilder()
+        DataFrame frame = DataFrame.newBuilder()
                 .setDataTimestamps(timestamps)
                 .addEnumColumns(column)
                 .build();
@@ -361,7 +360,7 @@ public class IngestionValidationUtilityTest extends IngestionTestBase {
                 .addAllValues(Arrays.asList(1.0, 2.0)) // Wrong number of values
                 .build();
         
-        IngestionDataFrame frame = IngestionDataFrame.newBuilder()
+        DataFrame frame = DataFrame.newBuilder()
                 .setDataTimestamps(timestamps)
                 .addDoubleArrayColumns(column)
                 .build();
@@ -402,7 +401,7 @@ public class IngestionValidationUtilityTest extends IngestionTestBase {
                 .addAllValues(Arrays.asList(1.0, 2.0))
                 .build();
         
-        IngestionDataFrame frame = IngestionDataFrame.newBuilder()
+        DataFrame frame = DataFrame.newBuilder()
                 .setDataTimestamps(timestamps)
                 .addDoubleArrayColumns(column)
                 .build();
@@ -444,7 +443,7 @@ public class IngestionValidationUtilityTest extends IngestionTestBase {
                 .addAllValues(Arrays.asList(1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0))
                 .build();
         
-        IngestionDataFrame frame = IngestionDataFrame.newBuilder()
+        DataFrame frame = DataFrame.newBuilder()
                 .setDataTimestamps(timestamps)
                 .addDoubleArrayColumns(column)
                 .build();
@@ -483,7 +482,7 @@ public class IngestionValidationUtilityTest extends IngestionTestBase {
                 .addImages(ByteString.copyFromUtf8("fake-image-data"))
                 .build();
         
-        IngestionDataFrame frame = IngestionDataFrame.newBuilder()
+        DataFrame frame = DataFrame.newBuilder()
                 .setDataTimestamps(timestamps)
                 .addImageColumns(column)
                 .build();
@@ -527,7 +526,7 @@ public class IngestionValidationUtilityTest extends IngestionTestBase {
                 .addImages(ByteString.copyFromUtf8("fake-image-data"))
                 .build();
         
-        IngestionDataFrame frame = IngestionDataFrame.newBuilder()
+        DataFrame frame = DataFrame.newBuilder()
                 .setDataTimestamps(timestamps)
                 .addImageColumns(column)
                 .build();
@@ -571,7 +570,7 @@ public class IngestionValidationUtilityTest extends IngestionTestBase {
                 .addImages(ByteString.copyFromUtf8("fake-image-data"))
                 .build();
         
-        IngestionDataFrame frame = IngestionDataFrame.newBuilder()
+        DataFrame frame = DataFrame.newBuilder()
                 .setDataTimestamps(timestamps)
                 .addImageColumns(column)
                 .build();
@@ -608,7 +607,7 @@ public class IngestionValidationUtilityTest extends IngestionTestBase {
                 .addValues(ByteString.copyFromUtf8("fake-struct-data"))
                 .build();
         
-        IngestionDataFrame frame = IngestionDataFrame.newBuilder()
+        DataFrame frame = DataFrame.newBuilder()
                 .setDataTimestamps(timestamps)
                 .addStructColumns(column)
                 .build();
@@ -645,7 +644,7 @@ public class IngestionValidationUtilityTest extends IngestionTestBase {
                 .setPayload(ByteString.copyFromUtf8("fake-payload"))
                 .build();
         
-        IngestionDataFrame frame = IngestionDataFrame.newBuilder()
+        DataFrame frame = DataFrame.newBuilder()
                 .setDataTimestamps(timestamps)
                 .addSerializedDataColumns(column)
                 .build();
@@ -686,7 +685,7 @@ public class IngestionValidationUtilityTest extends IngestionTestBase {
                 .addAllValues(Arrays.asList(1.0f, 2.0f))
                 .build();
         
-        IngestionDataFrame frame = IngestionDataFrame.newBuilder()
+        DataFrame frame = DataFrame.newBuilder()
                 .setDataTimestamps(timestamps)
                 .addDoubleColumns(doubleColumn)
                 .addFloatColumns(floatColumn)
@@ -727,7 +726,7 @@ public class IngestionValidationUtilityTest extends IngestionTestBase {
                 .addValues(1.23)
                 .build();
         
-        IngestionDataFrame frame = IngestionDataFrame.newBuilder()
+        DataFrame frame = DataFrame.newBuilder()
                 .setDataTimestamps(timestamps)
                 .addDoubleColumns(column)
                 .build();
@@ -773,7 +772,7 @@ public class IngestionValidationUtilityTest extends IngestionTestBase {
                 .addAllValues(Arrays.asList(1.23, 4.56))
                 .build();
         
-        IngestionDataFrame frame = IngestionDataFrame.newBuilder()
+        DataFrame frame = DataFrame.newBuilder()
                 .setDataTimestamps(timestamps)
                 .addDoubleColumns(column)
                 .build();
@@ -826,7 +825,7 @@ public class IngestionValidationUtilityTest extends IngestionTestBase {
                 .addAllValues(Arrays.asList(1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0)) // 2 samples * 4 elements
                 .build();
         
-        IngestionDataFrame frame = IngestionDataFrame.newBuilder()
+        DataFrame frame = DataFrame.newBuilder()
                 .setDataTimestamps(timestamps)
                 .addDoubleColumns(doubleColumn)
                 .addStringColumns(stringColumn)

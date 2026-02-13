@@ -2,9 +2,7 @@ package com.ospreydcs.dp.service.ingest.handler;
 
 import com.ospreydcs.dp.grpc.v1.common.*;
 import com.ospreydcs.dp.grpc.v1.ingestion.*;
-import com.ospreydcs.dp.grpc.v1.ingestion.IngestDataRequest.IngestionDataFrame;
 import com.ospreydcs.dp.service.common.model.ResultStatus;
-import com.ospreydcs.dp.service.ingest.service.IngestionServiceImpl;
 
 import java.util.HashSet;
 import java.util.List;
@@ -25,7 +23,7 @@ public class IngestionValidationUtility {
             return basicValidation;
         }
 
-        IngestionDataFrame frame = request.getIngestionDataFrame();
+        DataFrame frame = request.getIngestionDataFrame();
         int sampleCount = getSampleCount(frame.getDataTimestamps());
 
         // Layer 2: Timestamp validation
@@ -71,7 +69,7 @@ public class IngestionValidationUtility {
         }
 
         // Check that at least one column is provided
-        IngestionDataFrame frame = request.getIngestionDataFrame();
+        DataFrame frame = request.getIngestionDataFrame();
         int totalColumns = frame.getDataColumnsCount()
                 + frame.getSerializedDataColumnsCount()
                 + frame.getDoubleColumnsCount()
@@ -161,7 +159,7 @@ public class IngestionValidationUtility {
         return new ResultStatus(false, "");
     }
 
-    private static ResultStatus validateLegacyColumns(IngestionDataFrame frame, int sampleCount) {
+    private static ResultStatus validateLegacyColumns(DataFrame frame, int sampleCount) {
         // Validate DataColumns
         List<DataColumn> dataColumns = frame.getDataColumnsList();
         for (int i = 0; i < dataColumns.size(); i++) {
@@ -196,7 +194,7 @@ public class IngestionValidationUtility {
         return new ResultStatus(false, "");
     }
 
-    private static ResultStatus validateNewColumns(IngestionDataFrame frame, int sampleCount) {
+    private static ResultStatus validateNewColumns(DataFrame frame, int sampleCount) {
         // Validate scalar columns
         ResultStatus scalarValidation = validateScalarColumns(frame, sampleCount);
         if (scalarValidation.isError) {
@@ -219,7 +217,7 @@ public class IngestionValidationUtility {
         return validateStructColumns(frame, sampleCount);
     }
 
-    private static ResultStatus validateScalarColumns(IngestionDataFrame frame, int sampleCount) {
+    private static ResultStatus validateScalarColumns(DataFrame frame, int sampleCount) {
         // DoubleColumn validation
         List<DoubleColumn> doubleColumns = frame.getDoubleColumnsList();
         for (int i = 0; i < doubleColumns.size(); i++) {
@@ -349,7 +347,7 @@ public class IngestionValidationUtility {
         return new ResultStatus(false, "");
     }
 
-    private static ResultStatus validateArrayColumns(IngestionDataFrame frame, int sampleCount) {
+    private static ResultStatus validateArrayColumns(DataFrame frame, int sampleCount) {
         // DoubleArrayColumn validation
         List<DoubleArrayColumn> doubleArrayColumns = frame.getDoubleArrayColumnsList();
         for (int i = 0; i < doubleArrayColumns.size(); i++) {
@@ -458,7 +456,7 @@ public class IngestionValidationUtility {
         return new ResultStatus(false, "");
     }
 
-    private static ResultStatus validateImageColumns(IngestionDataFrame frame, int sampleCount) {
+    private static ResultStatus validateImageColumns(DataFrame frame, int sampleCount) {
         List<ImageColumn> imageColumns = frame.getImageColumnsList();
         for (int i = 0; i < imageColumns.size(); i++) {
             ImageColumn column = imageColumns.get(i);
@@ -510,7 +508,7 @@ public class IngestionValidationUtility {
         return new ResultStatus(false, "");
     }
 
-    private static ResultStatus validateStructColumns(IngestionDataFrame frame, int sampleCount) {
+    private static ResultStatus validateStructColumns(DataFrame frame, int sampleCount) {
         List<StructColumn> structColumns = frame.getStructColumnsList();
         for (int i = 0; i < structColumns.size(); i++) {
             StructColumn column = structColumns.get(i);
@@ -542,7 +540,7 @@ public class IngestionValidationUtility {
         return new ResultStatus(false, "");
     }
 
-    private static ResultStatus validateUniqueColumnNames(IngestionDataFrame frame) {
+    private static ResultStatus validateUniqueColumnNames(DataFrame frame) {
         Set<String> columnNames = new HashSet<>();
 
         // Check DataColumns

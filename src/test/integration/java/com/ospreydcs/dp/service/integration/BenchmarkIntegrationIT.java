@@ -2,13 +2,9 @@ package com.ospreydcs.dp.service.integration;
 
 import com.ospreydcs.dp.grpc.v1.annotation.ExportDataRequest;
 import com.ospreydcs.dp.grpc.v1.annotation.ExportDataResponse;
-import com.ospreydcs.dp.grpc.v1.common.DataBucket;
-import com.ospreydcs.dp.grpc.v1.common.DataColumn;
-import com.ospreydcs.dp.grpc.v1.common.DataValue;
-import com.ospreydcs.dp.grpc.v1.common.SamplingClock;
+import com.ospreydcs.dp.grpc.v1.common.*;
 import com.ospreydcs.dp.grpc.v1.ingestion.IngestDataRequest;
 import com.ospreydcs.dp.grpc.v1.ingestion.IngestDataResponse;
-import com.ospreydcs.dp.grpc.v1.ingestion.IngestDataRequest.IngestionDataFrame;
 import com.ospreydcs.dp.grpc.v1.query.QueryDataRequest;
 import com.ospreydcs.dp.grpc.v1.query.QueryDataResponse;
 import com.ospreydcs.dp.service.annotation.AnnotationTestBase;
@@ -87,7 +83,7 @@ public class BenchmarkIntegrationIT extends GrpcIntegrationTestBase {
 
             public IntegrationTestIngestionTask(
                     IngestionBenchmarkBase.IngestionTaskParams params,
-                    IngestionDataFrame.Builder templateDataTable,
+                    DataFrame.Builder templateDataTable,
                     Channel channel) {
 
                 super(params, templateDataTable, channel);
@@ -252,7 +248,7 @@ public class BenchmarkIntegrationIT extends GrpcIntegrationTestBase {
         }
 
         protected BidiStreamingIngestionTask newIngestionTask(
-                IngestionTaskParams params, IngestionDataFrame.Builder templateDataTable, Channel channel
+                IngestionTaskParams params, DataFrame.Builder templateDataTable, Channel channel
         ) {
             return new IntegrationTestIngestionTask(params, templateDataTable, channel);
         }

@@ -1,5 +1,6 @@
 package com.ospreydcs.dp.service.ingest.benchmark;
 
+import com.ospreydcs.dp.grpc.v1.common.DataFrame;
 import com.ospreydcs.dp.grpc.v1.common.DoubleColumn;
 import com.ospreydcs.dp.grpc.v1.ingestion.IngestDataRequest;
 
@@ -16,9 +17,10 @@ import java.util.List;
 public class DoubleColumnBuilder implements ColumnBuilder {
 
     @Override
-    public void buildColumns(IngestDataRequest.IngestionDataFrame.Builder frameBuilder, 
-                           IngestionBenchmarkBase.IngestionTaskParams params) {
-        
+    public void buildColumns(
+            DataFrame.Builder frameBuilder,
+            IngestionBenchmarkBase.IngestionTaskParams params
+    ) {
         final List<DoubleColumn> doubleColumnList = new ArrayList<>();
         
         for (int colIndex = params.firstColumnIndex; colIndex <= params.lastColumnIndex; colIndex++) {

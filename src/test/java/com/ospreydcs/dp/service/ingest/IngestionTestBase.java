@@ -235,8 +235,7 @@ public class IngestionTestBase {
             requestBuilder.setClientRequestId(params.requestId);
         }
 
-        IngestDataRequest.IngestionDataFrame.Builder dataFrameBuilder
-                = IngestDataRequest.IngestionDataFrame.newBuilder();
+        DataFrame.Builder dataFrameBuilder = DataFrame.newBuilder();
         DataTimestamps.Builder dataTimestampsBuilder = DataTimestamps.newBuilder();
 
         // set DataTimestamps for request

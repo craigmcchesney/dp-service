@@ -1,11 +1,7 @@
 package com.ospreydcs.dp.service.ingest.service;
 
-import com.ospreydcs.dp.grpc.v1.common.DataColumn;
-import com.ospreydcs.dp.grpc.v1.common.DataTimestamps;
-import com.ospreydcs.dp.grpc.v1.common.ExceptionalResult;
-import com.ospreydcs.dp.grpc.v1.common.SerializedDataColumn;
+import com.ospreydcs.dp.grpc.v1.common.*;
 import com.ospreydcs.dp.grpc.v1.ingestion.*;
-import com.ospreydcs.dp.grpc.v1.ingestion.IngestDataRequest.IngestionDataFrame;
 import com.ospreydcs.dp.service.common.protobuf.TimestampUtility;
 import com.ospreydcs.dp.service.common.model.ResultStatus;
 import com.ospreydcs.dp.service.ingest.handler.IngestionValidationUtility;
@@ -98,7 +94,7 @@ public class IngestionServiceImpl extends DpIngestionServiceGrpc.DpIngestionServ
 
         final int numRows = getNumRequestRows(request);
 
-        IngestionDataFrame frame = request.getIngestionDataFrame();
+        DataFrame frame = request.getIngestionDataFrame();
         int numColumns = frame.getDataColumnsCount()
                 + frame.getSerializedDataColumnsCount()
                 + frame.getDoubleColumnsCount()

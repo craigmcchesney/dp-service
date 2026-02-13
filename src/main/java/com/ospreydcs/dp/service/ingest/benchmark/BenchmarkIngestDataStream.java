@@ -1,5 +1,6 @@
 package com.ospreydcs.dp.service.ingest.benchmark;
 
+import com.ospreydcs.dp.grpc.v1.common.DataFrame;
 import com.ospreydcs.dp.grpc.v1.common.ExceptionalResult;
 import com.ospreydcs.dp.grpc.v1.ingestion.DpIngestionServiceGrpc;
 import com.ospreydcs.dp.grpc.v1.ingestion.IngestDataRequest;
@@ -20,7 +21,7 @@ public class BenchmarkIngestDataStream extends IngestionBenchmarkBase {
 
         public UniStreamingIngestionTask(
                 IngestionTaskParams params,
-                IngestDataRequest.IngestionDataFrame.Builder templateDataFrameBuilder,
+                DataFrame.Builder templateDataFrameBuilder,
                 Channel channel
         ) {
             super(params, templateDataFrameBuilder, channel);
@@ -38,7 +39,7 @@ public class BenchmarkIngestDataStream extends IngestionBenchmarkBase {
 
         private IngestionTaskResult sendUniStreamingIngestionRequest(
                 IngestionTaskParams params,
-                IngestDataRequest.IngestionDataFrame.Builder templateDataTable,
+                DataFrame.Builder templateDataTable,
                 Channel channel
         ) {
             final int streamNumber = params.streamNumber;
@@ -130,7 +131,7 @@ public class BenchmarkIngestDataStream extends IngestionBenchmarkBase {
     }
 
     protected UniStreamingIngestionTask newIngestionTask(
-            IngestionTaskParams params, IngestDataRequest.IngestionDataFrame.Builder templateDataTable, Channel channel
+            IngestionTaskParams params, DataFrame.Builder templateDataTable, Channel channel
     ) {
         return new UniStreamingIngestionTask(params, templateDataTable, channel);
     }

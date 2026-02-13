@@ -1,6 +1,6 @@
 package com.ospreydcs.dp.service.ingest.benchmark;
 
-import com.ospreydcs.dp.grpc.v1.ingestion.IngestDataRequest;
+import com.ospreydcs.dp.grpc.v1.common.DataFrame;
 
 /**
  * Strategy interface for building different types of column data structures in ingestion benchmarks.
@@ -16,7 +16,7 @@ public interface ColumnBuilder {
      * @param frameBuilder The IngestionDataFrame builder to add columns to
      * @param params The benchmark task parameters specifying data dimensions and properties
      */
-    void buildColumns(IngestDataRequest.IngestionDataFrame.Builder frameBuilder, 
+    void buildColumns(DataFrame.Builder frameBuilder,
                       IngestionBenchmarkBase.IngestionTaskParams params);
     
     /**

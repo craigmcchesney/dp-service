@@ -353,8 +353,7 @@ public class IngestionClient extends ServiceApiClientBase {
             requestBuilder.setClientRequestId(params.requestId);
         }
 
-        final IngestDataRequest.IngestionDataFrame.Builder dataFrameBuilder
-                = IngestDataRequest.IngestionDataFrame.newBuilder();
+        final DataFrame.Builder dataFrameBuilder = DataFrame.newBuilder();
         final DataTimestamps.Builder dataTimestampsBuilder = DataTimestamps.newBuilder();
 
         // set DataTimestamps for request
