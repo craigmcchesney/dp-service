@@ -26,8 +26,7 @@ public class BsonConstants {
     public static final String BSON_KEY_BUCKET_DATA_TIMESTAMPS_TYPE = "dataTimestamps.valueType";
     public static final String BSON_KEY_BUCKET_SAMPLE_COUNT = "dataTimestamps.sampleCount";
     public static final String BSON_KEY_BUCKET_SAMPLE_PERIOD = "dataTimestamps.samplePeriod";
-    public static final String BSON_KEY_BUCKET_DATA_TYPE_CASE = "dataColumn.valueCase";
-    public static final String BSON_KEY_BUCKET_DATA_TYPE = "dataColumn.valueType";
+    public static final String BSON_KEY_BUCKET_DATA_TYPE = "dataColumn._t";
     public static final String BSON_KEY_BUCKET_PROVIDER_ID = "providerId";
     public static final String BSON_KEY_BUCKET_PROVIDER_NAME = "providerName";
 

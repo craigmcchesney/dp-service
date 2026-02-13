@@ -130,7 +130,6 @@ public class MongoSyncQueryClient extends MongoSyncClient implements MongoQueryC
         Bson bucketFieldProjection = Projections.fields(Projections.include(
                 BsonConstants.BSON_KEY_PV_NAME,
                 BsonConstants.BSON_KEY_BUCKET_ID,
-                BsonConstants.BSON_KEY_BUCKET_DATA_TYPE_CASE,
                 BsonConstants.BSON_KEY_BUCKET_DATA_TYPE,
                 BsonConstants.BSON_KEY_BUCKET_DATA_TIMESTAMPS_CASE,
                 BsonConstants.BSON_KEY_BUCKET_DATA_TIMESTAMPS_TYPE,
@@ -170,9 +169,6 @@ public class MongoSyncQueryClient extends MongoSyncClient implements MongoQueryC
                                         Accumulators.last(
                                                 BsonConstants.BSON_KEY_PV_METADATA_LAST_BUCKET_ID,
                                                 "$" + BsonConstants.BSON_KEY_BUCKET_ID),
-                                        Accumulators.last(
-                                                BsonConstants.BSON_KEY_PV_METADATA_LAST_BUCKET_DATA_TYPE_CASE,
-                                                "$" + BsonConstants.BSON_KEY_BUCKET_DATA_TYPE_CASE),
                                         Accumulators.last(
                                                 BsonConstants.BSON_KEY_PV_METADATA_LAST_BUCKET_DATA_TYPE,
                                                 "$" + BsonConstants.BSON_KEY_BUCKET_DATA_TYPE),

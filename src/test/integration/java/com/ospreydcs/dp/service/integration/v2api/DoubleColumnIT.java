@@ -3,7 +3,9 @@ package com.ospreydcs.dp.service.integration.v2api;
 import com.ospreydcs.dp.grpc.v1.common.DataBucket;
 import com.ospreydcs.dp.grpc.v1.common.DoubleColumn;
 import com.ospreydcs.dp.grpc.v1.ingestion.IngestDataRequest;
+import com.ospreydcs.dp.grpc.v1.ingestion.SubscribeDataResponse;
 import com.ospreydcs.dp.service.ingest.IngestionTestBase;
+import com.ospreydcs.dp.service.ingest.utility.SubscribeDataUtility;
 import com.ospreydcs.dp.service.integration.GrpcIntegrationTestBase;
 import com.ospreydcs.dp.service.query.QueryTestBase;
 import org.junit.After;
@@ -55,16 +57,16 @@ public class DoubleColumnIT extends GrpcIntegrationTestBase {
         {
             // positive unary ingestion test for DoubleColumn
             // assemble IngestionRequest
-            String requestId = "request-8";
-            String pvName = "pv_08";
+            final String requestId = "request-8";
+            final String pvName = "pv_08";
             columnNames = Arrays.asList(pvName);
             firstSeconds = Instant.now().getEpochSecond();
             firstNanos = 0L;
-            long sampleIntervalNanos = 1_000_000L;
-            int numSamples = 2;
+            final long sampleIntervalNanos = 1_000_000L;
+            final int numSamples = 2;
 
             // specify explicit DoubleColumn data
-            List<DoubleColumn> doubleColumns = new ArrayList<>();
+            final List<DoubleColumn> doubleColumns = new ArrayList<>();
             DoubleColumn.Builder doubleColumnBuilder = DoubleColumn.newBuilder();
             doubleColumnBuilder.setName(pvName);
             doubleColumnBuilder.addValues(12.34);
@@ -84,7 +86,7 @@ public class DoubleColumnIT extends GrpcIntegrationTestBase {
                             sampleIntervalNanos,
                             numSamples,
                             columnNames,
-                            IngestionTestBase.IngestionDataType.ARRAY_DOUBLE,
+                            null,
                             null,
                             null,
                             false,
@@ -92,7 +94,7 @@ public class DoubleColumnIT extends GrpcIntegrationTestBase {
                     );
             ingestionRequestParams.setDoubleColumnList(doubleColumns); // add list of DoubleColumns to request parameters
 
-            IngestDataRequest request =
+            final IngestDataRequest request =
                     IngestionTestBase.buildIngestionRequest(ingestionRequestParams);
 
             ingestionServiceWrapper.sendAndVerifyIngestData(ingestionRequestParams, request, 0);
@@ -121,7 +123,7 @@ public class DoubleColumnIT extends GrpcIntegrationTestBase {
                             false
                     );
 
-            List<DataBucket> queryResultBuckets = queryServiceWrapper.queryData(
+            final List<DataBucket> queryResultBuckets = queryServiceWrapper.queryData(
                     params,
                     expectReject,
                     expectedRejectMessage
@@ -131,6 +133,82 @@ public class DoubleColumnIT extends GrpcIntegrationTestBase {
             for (DataBucket queryResultBucket : queryResultBuckets) {
                 assertEquals(requestDoubleColumn, queryResultBucket.getDoubleColumn());
             }
+        }
+
+        // create a data subscription, verification succeeds because data have been ingested for the subscription PV
+        SubscribeDataUtility.SubscribeDataCall subscribeDataCall;
+        {
+            final int expectedResponseCount = 1;
+            final boolean expectReject = false;
+            final String expectedRejectMessage = "";
+            subscribeDataCall =
+                    ingestionServiceWrapper.initiateSubscribeDataRequest(
+                            columnNames, expectedResponseCount, expectReject, expectedRejectMessage);
+        }
+
+        // ingest data that will be published to subscription
+        DoubleColumn subscriptionColumn;
+        {
+            // positive unary ingestion test for DoubleColumn
+            // assemble IngestionRequest
+            final String requestId = "request-9";
+            final String pvName = "pv_08";
+            columnNames = Arrays.asList(pvName);
+            final long sampleIntervalNanos = 1_000_000L;
+            final int numSamples = 2;
+
+            // specify explicit DoubleColumn data
+            final List<DoubleColumn> doubleColumns = new ArrayList<>();
+            DoubleColumn.Builder doubleColumnBuilder = DoubleColumn.newBuilder();
+            doubleColumnBuilder.setName(pvName);
+            doubleColumnBuilder.addValues(98.76);
+            doubleColumnBuilder.addValues(54.32);
+            subscriptionColumn = doubleColumnBuilder.build();
+            doubleColumns.add(subscriptionColumn);
+
+            // create request parameters
+            final IngestionTestBase.IngestionRequestParams subscriptionRequestParams =
+                    new IngestionTestBase.IngestionRequestParams(
+                            providerId,
+                            requestId,
+                            null,
+                            null,
+                            firstSeconds+1,
+                            firstNanos,
+                            sampleIntervalNanos,
+                            numSamples,
+                            columnNames,
+                            null,
+                            null,
+                            null,
+                            false,
+                            null
+                    );
+            subscriptionRequestParams.setDoubleColumnList(doubleColumns); // add list of DoubleColumns to request parameters
+
+            final IngestDataRequest request =
+                    IngestionTestBase.buildIngestionRequest(subscriptionRequestParams);
+
+            ingestionServiceWrapper.sendAndVerifyIngestData(subscriptionRequestParams, request, 0);
+        }
+
+        // check that expected subscription response is received
+        {
+            final IngestionTestBase.SubscribeDataResponseObserver responseObserver =
+                    (IngestionTestBase.SubscribeDataResponseObserver) subscribeDataCall.responseObserver();
+            
+            // wait for completion of API method response stream and confirm not in error state
+            responseObserver.awaitResponseLatch();
+            assertFalse(responseObserver.isError());
+
+            // get subscription responses for verification of expected contents
+            final List<SubscribeDataResponse> responseList = responseObserver.getResponseList();
+            assertEquals(1, responseList.size());
+            final SubscribeDataResponse subscriptionResponse = responseList.get(0);
+            assertTrue(subscriptionResponse.hasSubscribeDataResult());
+            assertTrue(subscriptionResponse.getSubscribeDataResult().hasDataFrame());
+            assertTrue(
+                    subscriptionResponse.getSubscribeDataResult().getDataFrame().getDoubleColumnsList().contains(subscriptionColumn));
         }
 
     }

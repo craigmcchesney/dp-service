@@ -1036,7 +1036,7 @@ public class GrpcIntegrationIngestionServiceWrapper extends GrpcIntegrationServi
         return sendSubscribeData(request, expectedResponseCount, expectReject, expectedRejectMessage);
     }
 
-    protected SubscribeDataUtility.SubscribeDataCall initiateSubscribeDataRequest(
+    public SubscribeDataUtility.SubscribeDataCall initiateSubscribeDataRequest(
             List<String> pvNameList,
             int expectedResponseCount,
             boolean expectReject,
