@@ -12,6 +12,8 @@ import com.ospreydcs.dp.service.common.bson.bucket.BucketDocument;
 import com.ospreydcs.dp.service.common.bson.RequestStatusDocument;
 import com.ospreydcs.dp.service.common.bson.calculations.CalculationsDocument;
 import com.ospreydcs.dp.service.common.bson.dataset.DataSetDocument;
+import com.ospreydcs.dp.service.common.bson.configuration.ConfigurationActivationDocument;
+import com.ospreydcs.dp.service.common.bson.configuration.ConfigurationDocument;
 import com.ospreydcs.dp.service.common.bson.pvmetadata.PvMetadataDocument;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -34,6 +36,8 @@ public class MongoSyncClient extends MongoClientBase {
     protected MongoCollection<AnnotationDocument> mongoCollectionAnnotations = null;
     protected MongoCollection<CalculationsDocument> mongoCollectionCalculations = null;
     protected MongoCollection<PvMetadataDocument> mongoCollectionPvMetadata = null;
+    protected MongoCollection<ConfigurationDocument> mongoCollectionConfigurations = null;
+    protected MongoCollection<ConfigurationActivationDocument> mongoCollectionConfigurationActivations = null;
 
     @Override
     protected boolean initMongoClient(String connectString) {
@@ -159,6 +163,42 @@ public class MongoSyncClient extends MongoClientBase {
     @Override
     protected boolean createMongoIndexPvMetadataWithOptions(Bson fieldNamesBson, com.mongodb.client.model.IndexOptions indexOptions) {
         mongoCollectionPvMetadata.createIndex(fieldNamesBson, indexOptions);
+        return true;
+    }
+
+    @Override
+    protected boolean initMongoCollectionConfigurations(String collectionName) {
+        mongoCollectionConfigurations = mongoDatabase.getCollection(collectionName, ConfigurationDocument.class);
+        return true;
+    }
+
+    @Override
+    protected boolean createMongoIndexConfigurations(Bson fieldNamesBson) {
+        mongoCollectionConfigurations.createIndex(fieldNamesBson);
+        return true;
+    }
+
+    @Override
+    protected boolean createMongoIndexConfigurationsWithOptions(Bson fieldNamesBson, com.mongodb.client.model.IndexOptions indexOptions) {
+        mongoCollectionConfigurations.createIndex(fieldNamesBson, indexOptions);
+        return true;
+    }
+
+    @Override
+    protected boolean initMongoCollectionConfigurationActivations(String collectionName) {
+        mongoCollectionConfigurationActivations = mongoDatabase.getCollection(collectionName, ConfigurationActivationDocument.class);
+        return true;
+    }
+
+    @Override
+    protected boolean createMongoIndexConfigurationActivations(Bson fieldNamesBson) {
+        mongoCollectionConfigurationActivations.createIndex(fieldNamesBson);
+        return true;
+    }
+
+    @Override
+    protected boolean createMongoIndexConfigurationActivationsWithOptions(Bson fieldNamesBson, com.mongodb.client.model.IndexOptions indexOptions) {
+        mongoCollectionConfigurationActivations.createIndex(fieldNamesBson, indexOptions);
         return true;
     }
 

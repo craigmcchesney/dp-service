@@ -2,6 +2,8 @@ package com.ospreydcs.dp.service.common.mongo;
 
 import com.mongodb.client.model.Indexes;
 import com.ospreydcs.dp.service.common.bson.annotation.AnnotationDocument;
+import com.ospreydcs.dp.service.common.bson.configuration.ConfigurationActivationDocument;
+import com.ospreydcs.dp.service.common.bson.configuration.ConfigurationDocument;
 import com.ospreydcs.dp.service.common.bson.pvmetadata.PvMetadataDocument;
 import com.ospreydcs.dp.service.common.bson.calculations.CalculationsDataFrameDocument;
 import com.ospreydcs.dp.service.common.bson.calculations.CalculationsDocument;
@@ -38,6 +40,8 @@ public abstract class MongoClientBase {
     public static final String COLLECTION_NAME_ANNOTATIONS = "annotations";
     public static final String COLLECTION_NAME_CALCULATIONS = "calculations";
     public static final String COLLECTION_NAME_PV_METADATA = "pvMetadata";
+    public static final String COLLECTION_NAME_CONFIGURATIONS = "configurations";
+    public static final String COLLECTION_NAME_CONFIGURATION_ACTIVATIONS = "configurationActivations";
 
     // configuration
     public static final int DEFAULT_NUM_WORKERS = 7;
@@ -63,6 +67,12 @@ public abstract class MongoClientBase {
     protected abstract boolean initMongoCollectionPvMetadata(String collectionName);
     protected abstract boolean createMongoIndexPvMetadata(Bson fieldNamesBson);
     protected abstract boolean createMongoIndexPvMetadataWithOptions(Bson fieldNamesBson, com.mongodb.client.model.IndexOptions indexOptions);
+    protected abstract boolean initMongoCollectionConfigurations(String collectionName);
+    protected abstract boolean createMongoIndexConfigurations(Bson fieldNamesBson);
+    protected abstract boolean createMongoIndexConfigurationsWithOptions(Bson fieldNamesBson, com.mongodb.client.model.IndexOptions indexOptions);
+    protected abstract boolean initMongoCollectionConfigurationActivations(String collectionName);
+    protected abstract boolean createMongoIndexConfigurationActivations(Bson fieldNamesBson);
+    protected abstract boolean createMongoIndexConfigurationActivationsWithOptions(Bson fieldNamesBson, com.mongodb.client.model.IndexOptions indexOptions);
 
     protected static ConfigurationManager configMgr() {
         return ConfigurationManager.getInstance();
@@ -122,7 +132,9 @@ public abstract class MongoClientBase {
                 StructColumnDocument.class,
                 ImageColumnDocument.class,
                 SerializedDataColumnDocument.class,
-                PvMetadataDocument.class
+                PvMetadataDocument.class,
+                ConfigurationDocument.class,
+                ConfigurationActivationDocument.class
         ).build();
 
         //        CodecProvider pojoCodecProvider = PojoCodecProvider.builder().automatic(true).build();
@@ -258,6 +270,42 @@ public abstract class MongoClientBase {
         return true;
     }
 
+    private boolean createMongoIndexesConfigurations() {
+        // unique index on configurationName (primary key)
+        createMongoIndexConfigurationsWithOptions(
+                Indexes.ascending(BsonConstants.BSON_KEY_CONFIGURATION_NAME),
+                new com.mongodb.client.model.IndexOptions().unique(true));
+        // regular indexes for query and overlap enforcement
+        createMongoIndexConfigurations(Indexes.ascending(BsonConstants.BSON_KEY_CONFIGURATION_CATEGORY));
+        createMongoIndexConfigurations(Indexes.ascending(BsonConstants.BSON_KEY_CONFIGURATION_PARENT_NAME));
+        createMongoIndexConfigurations(Indexes.ascending(BsonConstants.BSON_KEY_TAGS));
+        createMongoIndexConfigurations(Indexes.ascending("attributes.name"));
+        return true;
+    }
+
+    private boolean createMongoIndexesConfigurationActivations() {
+        // unique sparse index on clientActivationId (may be absent for server-generated IDs that were
+        // inserted before the index was applied, but all new records will have this field set)
+        createMongoIndexConfigurationActivationsWithOptions(
+                Indexes.ascending(BsonConstants.BSON_KEY_ACTIVATION_CLIENT_ID),
+                new com.mongodb.client.model.IndexOptions().unique(true).sparse(true));
+        // compound index for composite key lookups and overlap detection
+        createMongoIndexConfigurationActivations(
+                Indexes.compoundIndex(
+                        Indexes.ascending(BsonConstants.BSON_KEY_ACTIVATION_CONFIGURATION_NAME),
+                        Indexes.ascending(BsonConstants.BSON_KEY_ACTIVATION_START_TIME)));
+        // regular indexes for category overlap enforcement and query criteria
+        createMongoIndexConfigurationActivations(
+                Indexes.ascending(BsonConstants.BSON_KEY_ACTIVATION_INTERNAL_CATEGORY));
+        createMongoIndexConfigurationActivations(
+                Indexes.ascending(BsonConstants.BSON_KEY_ACTIVATION_START_TIME));
+        createMongoIndexConfigurationActivations(
+                Indexes.ascending(BsonConstants.BSON_KEY_ACTIVATION_END_TIME));
+        createMongoIndexConfigurationActivations(Indexes.ascending(BsonConstants.BSON_KEY_TAGS));
+        createMongoIndexConfigurationActivations(Indexes.ascending("attributes.name"));
+        return true;
+    }
+
     public static String getMongoConnectString() {
         // Allow a full connection string override to support replica sets, TLS, options, etc.
         String uriOverride = configMgr().getConfigString(CFG_KEY_DB_URI, DEFAULT_DB_URI);
@@ -306,6 +354,14 @@ public abstract class MongoClientBase {
 
     protected String getCollectionNamePvMetadata() {
         return COLLECTION_NAME_PV_METADATA;
+    }
+
+    protected String getCollectionNameConfigurations() {
+        return COLLECTION_NAME_CONFIGURATIONS;
+    }
+
+    protected String getCollectionNameConfigurationActivations() {
+        return COLLECTION_NAME_CONFIGURATION_ACTIVATIONS;
     }
 
     public boolean init() {
@@ -364,6 +420,14 @@ public abstract class MongoClientBase {
         // initialize pvMetadata collection
         initMongoCollectionPvMetadata(getCollectionNamePvMetadata());
         createMongoIndexesPvMetadata();
+
+        // initialize configurations collection
+        initMongoCollectionConfigurations(getCollectionNameConfigurations());
+        createMongoIndexesConfigurations();
+
+        // initialize configurationActivations collection
+        initMongoCollectionConfigurationActivations(getCollectionNameConfigurationActivations());
+        createMongoIndexesConfigurationActivations();
 
         return true;
     }

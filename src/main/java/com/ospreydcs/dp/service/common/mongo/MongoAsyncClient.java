@@ -138,4 +138,40 @@ public class MongoAsyncClient extends MongoClientBase {
         // pvMetadata indexes not used by async client
         return true;
     }
+
+    @Override
+    protected boolean initMongoCollectionConfigurations(String collectionName) {
+        // configurations collection not used by async client
+        return true;
+    }
+
+    @Override
+    protected boolean createMongoIndexConfigurations(Bson fieldNamesBson) {
+        // configurations indexes not used by async client
+        return true;
+    }
+
+    @Override
+    protected boolean createMongoIndexConfigurationsWithOptions(Bson fieldNamesBson, com.mongodb.client.model.IndexOptions indexOptions) {
+        // configurations indexes not used by async client
+        return true;
+    }
+
+    @Override
+    protected boolean initMongoCollectionConfigurationActivations(String collectionName) {
+        // configurationActivations collection not used by async client
+        return true;
+    }
+
+    @Override
+    protected boolean createMongoIndexConfigurationActivations(Bson fieldNamesBson) {
+        // configurationActivations indexes not used by async client
+        return true;
+    }
+
+    @Override
+    protected boolean createMongoIndexConfigurationActivationsWithOptions(Bson fieldNamesBson, com.mongodb.client.model.IndexOptions indexOptions) {
+        // configurationActivations indexes not used by async client
+        return true;
+    }
 }
