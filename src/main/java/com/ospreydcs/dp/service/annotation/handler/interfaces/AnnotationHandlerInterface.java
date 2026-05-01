@@ -41,4 +41,40 @@ public interface AnnotationHandlerInterface {
     void handleDeletePvMetadata(
             DeletePvMetadataRequest request,
             StreamObserver<DeletePvMetadataResponse> responseObserver);
+
+    void handleSaveConfiguration(
+            SaveConfigurationRequest request,
+            StreamObserver<SaveConfigurationResponse> responseObserver);
+
+    void handleGetConfiguration(
+            GetConfigurationRequest request,
+            StreamObserver<GetConfigurationResponse> responseObserver);
+
+    void handleQueryConfigurations(
+            QueryConfigurationsRequest request,
+            StreamObserver<QueryConfigurationsResponse> responseObserver);
+
+    void handleDeleteConfiguration(
+            DeleteConfigurationRequest request,
+            StreamObserver<DeleteConfigurationResponse> responseObserver);
+
+    void handleSaveConfigurationActivation(
+            SaveConfigurationActivationRequest request,
+            StreamObserver<SaveConfigurationActivationResponse> responseObserver);
+
+    void handleGetConfigurationActivation(
+            GetConfigurationActivationRequest request,
+            StreamObserver<GetConfigurationActivationResponse> responseObserver);
+
+    void handleQueryConfigurationActivations(
+            QueryConfigurationActivationsRequest request,
+            StreamObserver<QueryConfigurationActivationsResponse> responseObserver);
+
+    void handleDeleteConfigurationActivation(
+            DeleteConfigurationActivationRequest request,
+            StreamObserver<DeleteConfigurationActivationResponse> responseObserver);
+
+    void handleGetActiveConfigurations(
+            GetActiveConfigurationsRequest request,
+            StreamObserver<GetActiveConfigurationsResponse> responseObserver);
 }
