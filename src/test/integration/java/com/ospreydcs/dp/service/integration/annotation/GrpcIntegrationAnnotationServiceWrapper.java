@@ -13,6 +13,10 @@ import com.ospreydcs.dp.service.annotation.handler.mongo.MongoAnnotationHandler;
 import com.ospreydcs.dp.service.annotation.service.AnnotationServiceImpl;
 import com.ospreydcs.dp.service.common.bson.annotation.AnnotationDocument;
 import com.ospreydcs.dp.service.common.bson.bucket.BucketDocument;
+import com.ospreydcs.dp.service.common.bson.configuration.ConfigurationActivationDocument;
+import com.ospreydcs.dp.service.common.bson.configuration.ConfigurationDocument;
+import com.ospreydcs.dp.grpc.v1.common.Configuration;
+import com.ospreydcs.dp.grpc.v1.common.ConfigurationActivation;
 import com.ospreydcs.dp.service.common.bson.pvmetadata.PvMetadataDocument;
 import com.ospreydcs.dp.grpc.v1.common.PvMetadata;
 import com.ospreydcs.dp.service.common.bson.calculations.CalculationsDocument;
@@ -1197,6 +1201,361 @@ public class GrpcIntegrationAnnotationServiceWrapper extends GrpcIntegrationServ
         final AnnotationTestBase.BulkSavePvMetadataResponseObserver responseObserver =
                 new AnnotationTestBase.BulkSavePvMetadataResponseObserver();
         new Thread(() -> asyncStub.bulkSavePvMetadata(request, responseObserver)).start();
+        responseObserver.await();
+        assertTrue(responseObserver.isError());
+        assertTrue(responseObserver.getErrorMessage().contains("not yet implemented"));
+    }
+
+    // =========================================================================
+    // Configuration helper methods
+    // =========================================================================
+
+    public String sendAndVerifySaveConfiguration(
+            AnnotationTestBase.SaveConfigurationParams params,
+            boolean expectReject,
+            String expectedRejectMessage
+    ) {
+        final SaveConfigurationRequest request = AnnotationTestBase.buildSaveConfigurationRequest(params);
+        final DpAnnotationServiceGrpc.DpAnnotationServiceStub asyncStub = DpAnnotationServiceGrpc.newStub(channel);
+        final AnnotationTestBase.SaveConfigurationResponseObserver responseObserver =
+                new AnnotationTestBase.SaveConfigurationResponseObserver();
+
+        new Thread(() -> asyncStub.saveConfiguration(request, responseObserver)).start();
+        responseObserver.await();
+
+        if (expectReject) {
+            assertTrue(responseObserver.isError());
+            assertTrue(responseObserver.getErrorMessage().contains(expectedRejectMessage));
+            assertNull(responseObserver.getConfigurationName());
+            return null;
+        }
+
+        assertFalse(responseObserver.getErrorMessage(), responseObserver.isError());
+        final String configurationName = responseObserver.getConfigurationName();
+        assertNotNull(configurationName);
+        assertFalse(configurationName.isBlank());
+        return configurationName;
+    }
+
+    public Configuration sendAndVerifyGetConfiguration(
+            String configurationName,
+            boolean expectReject,
+            String expectedRejectMessage
+    ) {
+        final GetConfigurationRequest request = AnnotationTestBase.buildGetConfigurationRequest(configurationName);
+        final DpAnnotationServiceGrpc.DpAnnotationServiceStub asyncStub = DpAnnotationServiceGrpc.newStub(channel);
+        final AnnotationTestBase.GetConfigurationResponseObserver responseObserver =
+                new AnnotationTestBase.GetConfigurationResponseObserver();
+
+        new Thread(() -> asyncStub.getConfiguration(request, responseObserver)).start();
+        responseObserver.await();
+
+        if (expectReject) {
+            assertTrue(responseObserver.isError());
+            assertTrue(responseObserver.getErrorMessage().contains(expectedRejectMessage));
+            return null;
+        }
+
+        assertFalse(responseObserver.getErrorMessage(), responseObserver.isError());
+        final Configuration configuration = responseObserver.getConfiguration();
+        assertNotNull(configuration);
+        return configuration;
+    }
+
+    public List<Configuration> sendAndVerifyQueryConfigurations(
+            List<QueryConfigurationsRequest.QueryConfigurationsCriterion> criteria,
+            int limit,
+            String pageToken,
+            boolean expectReject,
+            String expectedRejectMessage,
+            int expectedResultCount
+    ) {
+        final QueryConfigurationsRequest request =
+                AnnotationTestBase.buildQueryConfigurationsRequest(criteria, limit, pageToken);
+        final DpAnnotationServiceGrpc.DpAnnotationServiceStub asyncStub = DpAnnotationServiceGrpc.newStub(channel);
+        final AnnotationTestBase.QueryConfigurationsResponseObserver responseObserver =
+                new AnnotationTestBase.QueryConfigurationsResponseObserver();
+
+        new Thread(() -> asyncStub.queryConfigurations(request, responseObserver)).start();
+        responseObserver.await();
+
+        if (expectReject) {
+            assertTrue(responseObserver.isError());
+            assertTrue(responseObserver.getErrorMessage().contains(expectedRejectMessage));
+            return new ArrayList<>();
+        }
+
+        assertFalse(responseObserver.getErrorMessage(), responseObserver.isError());
+        final List<Configuration> configList = responseObserver.getConfigurationList();
+        assertEquals(expectedResultCount, configList.size());
+        return configList;
+    }
+
+    public String sendAndVerifyDeleteConfiguration(
+            String configurationName,
+            boolean expectReject,
+            String expectedRejectMessage
+    ) {
+        final DeleteConfigurationRequest request = AnnotationTestBase.buildDeleteConfigurationRequest(configurationName);
+        final DpAnnotationServiceGrpc.DpAnnotationServiceStub asyncStub = DpAnnotationServiceGrpc.newStub(channel);
+        final AnnotationTestBase.DeleteConfigurationResponseObserver responseObserver =
+                new AnnotationTestBase.DeleteConfigurationResponseObserver();
+
+        new Thread(() -> asyncStub.deleteConfiguration(request, responseObserver)).start();
+        responseObserver.await();
+
+        if (expectReject) {
+            assertTrue(responseObserver.isError());
+            assertTrue(responseObserver.getErrorMessage().contains(expectedRejectMessage));
+            return null;
+        }
+
+        assertFalse(responseObserver.getErrorMessage(), responseObserver.isError());
+        final String deletedName = responseObserver.getConfigurationName();
+        assertNotNull(deletedName);
+        assertFalse(deletedName.isBlank());
+        return deletedName;
+    }
+
+    public void sendAndVerifyPatchConfigurationStub(String configurationName) {
+        final PatchConfigurationRequest request = PatchConfigurationRequest.newBuilder()
+                .setConfigurationName(configurationName).build();
+        final DpAnnotationServiceGrpc.DpAnnotationServiceStub asyncStub = DpAnnotationServiceGrpc.newStub(channel);
+        final AnnotationTestBase.PatchConfigurationResponseObserver responseObserver =
+                new AnnotationTestBase.PatchConfigurationResponseObserver();
+        new Thread(() -> asyncStub.patchConfiguration(request, responseObserver)).start();
+        responseObserver.await();
+        assertTrue(responseObserver.isError());
+        assertTrue(responseObserver.getErrorMessage().contains("not yet implemented"));
+    }
+
+    public void sendAndVerifyBulkSaveConfigurationStub() {
+        final BulkSaveConfigurationRequest request = BulkSaveConfigurationRequest.newBuilder().build();
+        final DpAnnotationServiceGrpc.DpAnnotationServiceStub asyncStub = DpAnnotationServiceGrpc.newStub(channel);
+        final AnnotationTestBase.BulkSaveConfigurationResponseObserver responseObserver =
+                new AnnotationTestBase.BulkSaveConfigurationResponseObserver();
+        new Thread(() -> asyncStub.bulkSaveConfiguration(request, responseObserver)).start();
+        responseObserver.await();
+        assertTrue(responseObserver.isError());
+        assertTrue(responseObserver.getErrorMessage().contains("not yet implemented"));
+    }
+
+    // =========================================================================
+    // ConfigurationActivation helper methods
+    // =========================================================================
+
+    public String sendAndVerifySaveConfigurationActivation(
+            AnnotationTestBase.SaveConfigurationActivationParams params,
+            boolean expectReject,
+            String expectedRejectMessage
+    ) {
+        final SaveConfigurationActivationRequest request =
+                AnnotationTestBase.buildSaveConfigurationActivationRequest(params);
+        final DpAnnotationServiceGrpc.DpAnnotationServiceStub asyncStub = DpAnnotationServiceGrpc.newStub(channel);
+        final AnnotationTestBase.SaveConfigurationActivationResponseObserver responseObserver =
+                new AnnotationTestBase.SaveConfigurationActivationResponseObserver();
+
+        new Thread(() -> asyncStub.saveConfigurationActivation(request, responseObserver)).start();
+        responseObserver.await();
+
+        if (expectReject) {
+            assertTrue(responseObserver.isError());
+            assertTrue(responseObserver.getErrorMessage().contains(expectedRejectMessage));
+            assertNull(responseObserver.getClientActivationId());
+            return null;
+        }
+
+        assertFalse(responseObserver.getErrorMessage(), responseObserver.isError());
+        final String clientActivationId = responseObserver.getClientActivationId();
+        assertNotNull(clientActivationId);
+        assertFalse(clientActivationId.isBlank());
+        return clientActivationId;
+    }
+
+    public ConfigurationActivation sendAndVerifyGetConfigurationActivationById(
+            String clientActivationId,
+            boolean expectReject,
+            String expectedRejectMessage
+    ) {
+        final GetConfigurationActivationRequest request =
+                AnnotationTestBase.buildGetConfigurationActivationByIdRequest(clientActivationId);
+        final DpAnnotationServiceGrpc.DpAnnotationServiceStub asyncStub = DpAnnotationServiceGrpc.newStub(channel);
+        final AnnotationTestBase.GetConfigurationActivationResponseObserver responseObserver =
+                new AnnotationTestBase.GetConfigurationActivationResponseObserver();
+
+        new Thread(() -> asyncStub.getConfigurationActivation(request, responseObserver)).start();
+        responseObserver.await();
+
+        if (expectReject) {
+            assertTrue(responseObserver.isError());
+            assertTrue(responseObserver.getErrorMessage().contains(expectedRejectMessage));
+            return null;
+        }
+
+        assertFalse(responseObserver.getErrorMessage(), responseObserver.isError());
+        final ConfigurationActivation activation = responseObserver.getConfigurationActivation();
+        assertNotNull(activation);
+        return activation;
+    }
+
+    public ConfigurationActivation sendAndVerifyGetConfigurationActivationByCompositeKey(
+            String configurationName,
+            com.ospreydcs.dp.grpc.v1.common.Timestamp startTime,
+            boolean expectReject,
+            String expectedRejectMessage
+    ) {
+        final GetConfigurationActivationRequest request =
+                AnnotationTestBase.buildGetConfigurationActivationByCompositeKeyRequest(configurationName, startTime);
+        final DpAnnotationServiceGrpc.DpAnnotationServiceStub asyncStub = DpAnnotationServiceGrpc.newStub(channel);
+        final AnnotationTestBase.GetConfigurationActivationResponseObserver responseObserver =
+                new AnnotationTestBase.GetConfigurationActivationResponseObserver();
+
+        new Thread(() -> asyncStub.getConfigurationActivation(request, responseObserver)).start();
+        responseObserver.await();
+
+        if (expectReject) {
+            assertTrue(responseObserver.isError());
+            assertTrue(responseObserver.getErrorMessage().contains(expectedRejectMessage));
+            return null;
+        }
+
+        assertFalse(responseObserver.getErrorMessage(), responseObserver.isError());
+        final ConfigurationActivation activation = responseObserver.getConfigurationActivation();
+        assertNotNull(activation);
+        return activation;
+    }
+
+    public List<ConfigurationActivation> sendAndVerifyQueryConfigurationActivations(
+            List<QueryConfigurationActivationsRequest.QueryConfigurationActivationsCriterion> criteria,
+            int limit,
+            String pageToken,
+            boolean expectReject,
+            String expectedRejectMessage,
+            int expectedResultCount
+    ) {
+        final QueryConfigurationActivationsRequest request =
+                AnnotationTestBase.buildQueryConfigurationActivationsRequest(criteria, limit, pageToken);
+        final DpAnnotationServiceGrpc.DpAnnotationServiceStub asyncStub = DpAnnotationServiceGrpc.newStub(channel);
+        final AnnotationTestBase.QueryConfigurationActivationsResponseObserver responseObserver =
+                new AnnotationTestBase.QueryConfigurationActivationsResponseObserver();
+
+        new Thread(() -> asyncStub.queryConfigurationActivations(request, responseObserver)).start();
+        responseObserver.await();
+
+        if (expectReject) {
+            assertTrue(responseObserver.isError());
+            assertTrue(responseObserver.getErrorMessage().contains(expectedRejectMessage));
+            return new ArrayList<>();
+        }
+
+        assertFalse(responseObserver.getErrorMessage(), responseObserver.isError());
+        final List<ConfigurationActivation> activationList = responseObserver.getActivationList();
+        assertEquals(expectedResultCount, activationList.size());
+        return activationList;
+    }
+
+    public String sendAndVerifyDeleteConfigurationActivationById(
+            String clientActivationId,
+            boolean expectReject,
+            String expectedRejectMessage
+    ) {
+        final DeleteConfigurationActivationRequest request =
+                AnnotationTestBase.buildDeleteConfigurationActivationByIdRequest(clientActivationId);
+        final DpAnnotationServiceGrpc.DpAnnotationServiceStub asyncStub = DpAnnotationServiceGrpc.newStub(channel);
+        final AnnotationTestBase.DeleteConfigurationActivationResponseObserver responseObserver =
+                new AnnotationTestBase.DeleteConfigurationActivationResponseObserver();
+
+        new Thread(() -> asyncStub.deleteConfigurationActivation(request, responseObserver)).start();
+        responseObserver.await();
+
+        if (expectReject) {
+            assertTrue(responseObserver.isError());
+            assertTrue(responseObserver.getErrorMessage().contains(expectedRejectMessage));
+            return null;
+        }
+
+        assertFalse(responseObserver.getErrorMessage(), responseObserver.isError());
+        final String deletedId = responseObserver.getClientActivationId();
+        assertNotNull(deletedId);
+        assertFalse(deletedId.isBlank());
+        return deletedId;
+    }
+
+    public String sendAndVerifyDeleteConfigurationActivationByCompositeKey(
+            String configurationName,
+            com.ospreydcs.dp.grpc.v1.common.Timestamp startTime,
+            boolean expectReject,
+            String expectedRejectMessage
+    ) {
+        final DeleteConfigurationActivationRequest request =
+                AnnotationTestBase.buildDeleteConfigurationActivationByCompositeKeyRequest(configurationName, startTime);
+        final DpAnnotationServiceGrpc.DpAnnotationServiceStub asyncStub = DpAnnotationServiceGrpc.newStub(channel);
+        final AnnotationTestBase.DeleteConfigurationActivationResponseObserver responseObserver =
+                new AnnotationTestBase.DeleteConfigurationActivationResponseObserver();
+
+        new Thread(() -> asyncStub.deleteConfigurationActivation(request, responseObserver)).start();
+        responseObserver.await();
+
+        if (expectReject) {
+            assertTrue(responseObserver.isError());
+            assertTrue(responseObserver.getErrorMessage().contains(expectedRejectMessage));
+            return null;
+        }
+
+        assertFalse(responseObserver.getErrorMessage(), responseObserver.isError());
+        final String deletedId = responseObserver.getClientActivationId();
+        assertNotNull(deletedId);
+        assertFalse(deletedId.isBlank());
+        return deletedId;
+    }
+
+    public List<ConfigurationActivation> sendAndVerifyGetActiveConfigurations(
+            com.ospreydcs.dp.grpc.v1.common.Timestamp timestamp,
+            boolean expectReject,
+            String expectedRejectMessage,
+            int expectedResultCount
+    ) {
+        final GetActiveConfigurationsRequest request = timestamp != null
+                ? AnnotationTestBase.buildGetActiveConfigurationsRequest(timestamp)
+                : GetActiveConfigurationsRequest.newBuilder().build();
+        final DpAnnotationServiceGrpc.DpAnnotationServiceStub asyncStub = DpAnnotationServiceGrpc.newStub(channel);
+        final AnnotationTestBase.GetActiveConfigurationsResponseObserver responseObserver =
+                new AnnotationTestBase.GetActiveConfigurationsResponseObserver();
+
+        new Thread(() -> asyncStub.getActiveConfigurations(request, responseObserver)).start();
+        responseObserver.await();
+
+        if (expectReject) {
+            assertTrue(responseObserver.isError());
+            assertTrue(responseObserver.getErrorMessage().contains(expectedRejectMessage));
+            return new ArrayList<>();
+        }
+
+        assertFalse(responseObserver.getErrorMessage(), responseObserver.isError());
+        final List<ConfigurationActivation> activationList = responseObserver.getActivationList();
+        assertEquals(expectedResultCount, activationList.size());
+        return activationList;
+    }
+
+    public void sendAndVerifyPatchConfigurationActivationStub(String clientActivationId) {
+        final PatchConfigurationActivationRequest request = PatchConfigurationActivationRequest.newBuilder()
+                .setClientActivationId(clientActivationId).build();
+        final DpAnnotationServiceGrpc.DpAnnotationServiceStub asyncStub = DpAnnotationServiceGrpc.newStub(channel);
+        final AnnotationTestBase.PatchConfigurationActivationResponseObserver responseObserver =
+                new AnnotationTestBase.PatchConfigurationActivationResponseObserver();
+        new Thread(() -> asyncStub.patchConfigurationActivation(request, responseObserver)).start();
+        responseObserver.await();
+        assertTrue(responseObserver.isError());
+        assertTrue(responseObserver.getErrorMessage().contains("not yet implemented"));
+    }
+
+    public void sendAndVerifyBulkSaveConfigurationActivationStub() {
+        final BulkSaveConfigurationActivationRequest request =
+                BulkSaveConfigurationActivationRequest.newBuilder().build();
+        final DpAnnotationServiceGrpc.DpAnnotationServiceStub asyncStub = DpAnnotationServiceGrpc.newStub(channel);
+        final AnnotationTestBase.BulkSaveConfigurationActivationResponseObserver responseObserver =
+                new AnnotationTestBase.BulkSaveConfigurationActivationResponseObserver();
+        new Thread(() -> asyncStub.bulkSaveConfigurationActivation(request, responseObserver)).start();
         responseObserver.await();
         assertTrue(responseObserver.isError());
         assertTrue(responseObserver.getErrorMessage().contains("not yet implemented"));

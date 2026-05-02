@@ -9,6 +9,8 @@ import com.ospreydcs.dp.service.common.bson.bucket.BucketDocument;
 import com.ospreydcs.dp.service.common.bson.calculations.CalculationsDocument;
 import com.ospreydcs.dp.service.common.bson.dataset.DataBlockDocument;
 import com.ospreydcs.dp.service.common.bson.dataset.DataSetDocument;
+import com.ospreydcs.dp.service.common.bson.configuration.ConfigurationActivationDocument;
+import com.ospreydcs.dp.service.common.bson.configuration.ConfigurationDocument;
 import com.ospreydcs.dp.service.common.bson.pvmetadata.PvMetadataDocument;
 import com.ospreydcs.dp.service.query.handler.mongo.client.MongoSyncQueryClient;
 import org.apache.logging.log4j.LogManager;
@@ -16,6 +18,7 @@ import org.apache.logging.log4j.Logger;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -187,6 +190,66 @@ public class MongoTestClient extends MongoSyncClient {
         final MongoSyncQueryClient mongoSyncQueryClient = new MongoSyncQueryClient();
         mongoSyncQueryClient.init();
         return mongoSyncQueryClient.executeDataBlockQuery(dataBlock);
+    }
+
+    public ConfigurationDocument findConfiguration(String configurationName) {
+        for (int retryCount = 0 ; retryCount < MONGO_FIND_RETRY_COUNT ; ++retryCount){
+            final List<ConfigurationDocument> matchingDocuments = new ArrayList<>();
+            mongoCollectionConfigurations.find(eq("configurationName", configurationName)).into(matchingDocuments);
+            if (matchingDocuments.size() > 0) {
+                return matchingDocuments.get(0);
+            } else {
+                try {
+                    logger.info("findConfiguration configurationName: " + configurationName + " retrying");
+                    Thread.sleep(MONGO_FIND_RETRY_INTERVAL_MILLIS);
+                } catch (InterruptedException ex) {
+                    // ignore and just retry
+                }
+            }
+        }
+        return null;
+    }
+
+    public ConfigurationActivationDocument findConfigurationActivationById(String clientActivationId) {
+        for (int retryCount = 0 ; retryCount < MONGO_FIND_RETRY_COUNT ; ++retryCount){
+            final List<ConfigurationActivationDocument> matchingDocuments = new ArrayList<>();
+            mongoCollectionConfigurationActivations.find(eq("clientActivationId", clientActivationId))
+                    .into(matchingDocuments);
+            if (matchingDocuments.size() > 0) {
+                return matchingDocuments.get(0);
+            } else {
+                try {
+                    logger.info("findConfigurationActivationById id: " + clientActivationId + " retrying");
+                    Thread.sleep(MONGO_FIND_RETRY_INTERVAL_MILLIS);
+                } catch (InterruptedException ex) {
+                    // ignore and just retry
+                }
+            }
+        }
+        return null;
+    }
+
+    public ConfigurationActivationDocument findConfigurationActivationByCompositeKey(
+            String configurationName, Instant startTime) {
+        for (int retryCount = 0 ; retryCount < MONGO_FIND_RETRY_COUNT ; ++retryCount){
+            final List<ConfigurationActivationDocument> matchingDocuments = new ArrayList<>();
+            final Bson filter = and(
+                    eq("configurationName", configurationName),
+                    eq("startTime", startTime));
+            mongoCollectionConfigurationActivations.find(filter).into(matchingDocuments);
+            if (matchingDocuments.size() > 0) {
+                return matchingDocuments.get(0);
+            } else {
+                try {
+                    logger.info("findConfigurationActivationByCompositeKey configurationName: "
+                            + configurationName + " startTime: " + startTime + " retrying");
+                    Thread.sleep(MONGO_FIND_RETRY_INTERVAL_MILLIS);
+                } catch (InterruptedException ex) {
+                    // ignore and just retry
+                }
+            }
+        }
+        return null;
     }
 
     public CalculationsDocument findCalculations(String calculationsId) {
