@@ -727,6 +727,14 @@ public class ConfigurationIT extends AnnotationIntegrationTestIntermediate {
     }
 
     @Test
+    public void testGetConfigurationActivationByCompositeKeyRejectMissingStartTime() {
+        // A zero/default Timestamp means startTime was not specified — should be rejected.
+        annotationServiceWrapper.sendAndVerifyGetConfigurationActivationByCompositeKey(
+                "some-config", ts(0L, 0L),
+                true, "GetConfigurationActivationRequest.compositeKey.startTime must be specified");
+    }
+
+    @Test
     public void testGetConfigurationActivationByIdRejectNotFound() {
         annotationServiceWrapper.sendAndVerifyGetConfigurationActivationById(
                 "no-such-id", true, "no ConfigurationActivation record found for: clientActivationId: no-such-id");
@@ -1019,6 +1027,13 @@ public class ConfigurationIT extends AnnotationIntegrationTestIntermediate {
     }
 
     @Test
+    public void testDeleteConfigurationActivationByCompositeKeyRejectNotFound() {
+        annotationServiceWrapper.sendAndVerifyDeleteConfigurationActivationByCompositeKey(
+                "no-such-config", ts(T0_SECONDS, T0_NANOS),
+                true, "no ConfigurationActivation record found for:");
+    }
+
+    @Test
     public void testDeleteConfigurationActivationDoubleDeleteRejected() {
         saveConfigForActivationTests("del-act-config-3", "del-cat-3");
         final AnnotationTestBase.SaveConfigurationActivationParams params =
@@ -1076,10 +1091,18 @@ public class ConfigurationIT extends AnnotationIntegrationTestIntermediate {
 
     @Test
     public void testGetActiveConfigurationsDefaultsToNow() {
-        // Omitting the timestamp (passing null) should default to current server time and succeed.
-        // No scenario data needed — just verifying no error is returned.
-        annotationServiceWrapper.sendAndVerifyGetActiveConfigurations(
-                null, false, null, 0);
+        // active-now-config: open-ended from T3 (2024-04-01), so it is active at Instant.now().
+        saveConfigForActivationTests("active-now-config", "active-now-cat");
+        final AnnotationTestBase.SaveConfigurationActivationParams params =
+                new AnnotationTestBase.SaveConfigurationActivationParams(
+                        "active-now-id", "active-now-config",
+                        ts(T3_SECONDS, T3_NANOS), null,
+                        null, null, null, null);
+        annotationServiceWrapper.sendAndVerifySaveConfigurationActivation(params, false, null);
+        // Omitting the timestamp (passing null) should default to Instant.now() and return the open-ended record.
+        final List<ConfigurationActivation> results = annotationServiceWrapper
+                .sendAndVerifyGetActiveConfigurations(null, false, null, 1);
+        assertEquals("active-now-id", results.get(0).getClientActivationId());
     }
 
     @Test

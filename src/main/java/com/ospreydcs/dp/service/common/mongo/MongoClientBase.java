@@ -264,9 +264,10 @@ public abstract class MongoClientBase {
                 new com.mongodb.client.model.IndexOptions().unique(true));
         // regular index on aliases for fast name-or-alias lookup
         createMongoIndexPvMetadata(Indexes.ascending("aliases"));
-        // regular indexes on tags and attributes to support query filter patterns
+        // regular indexes on tags and attributes to support query filter patterns;
+        // attributes uses a wildcard index so dot-path filters (e.g. attributes.key) are covered
         createMongoIndexPvMetadata(Indexes.ascending(BsonConstants.BSON_KEY_TAGS));
-        createMongoIndexPvMetadata(Indexes.ascending(BsonConstants.BSON_KEY_ATTRIBUTES));
+        createMongoIndexPvMetadata(Indexes.ascending(BsonConstants.BSON_KEY_ATTRIBUTES + ".$**"));
         return true;
     }
 
@@ -279,7 +280,8 @@ public abstract class MongoClientBase {
         createMongoIndexConfigurations(Indexes.ascending(BsonConstants.BSON_KEY_CONFIGURATION_CATEGORY));
         createMongoIndexConfigurations(Indexes.ascending(BsonConstants.BSON_KEY_CONFIGURATION_PARENT_NAME));
         createMongoIndexConfigurations(Indexes.ascending(BsonConstants.BSON_KEY_TAGS));
-        createMongoIndexConfigurations(Indexes.ascending(BsonConstants.BSON_KEY_ATTRIBUTES));
+        // wildcard index so dot-path attribute filters (e.g. attributes.key) are covered
+        createMongoIndexConfigurations(Indexes.ascending(BsonConstants.BSON_KEY_ATTRIBUTES + ".$**"));
         return true;
     }
 
@@ -302,7 +304,8 @@ public abstract class MongoClientBase {
         createMongoIndexConfigurationActivations(
                 Indexes.ascending(BsonConstants.BSON_KEY_ACTIVATION_END_TIME));
         createMongoIndexConfigurationActivations(Indexes.ascending(BsonConstants.BSON_KEY_TAGS));
-        createMongoIndexConfigurationActivations(Indexes.ascending(BsonConstants.BSON_KEY_ATTRIBUTES));
+        // wildcard index so dot-path attribute filters (e.g. attributes.key) are covered
+        createMongoIndexConfigurationActivations(Indexes.ascending(BsonConstants.BSON_KEY_ATTRIBUTES + ".$**"));
         return true;
     }
 

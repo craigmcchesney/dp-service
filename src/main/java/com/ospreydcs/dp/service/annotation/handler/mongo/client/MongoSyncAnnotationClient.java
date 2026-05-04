@@ -720,7 +720,7 @@ public class MongoSyncAnnotationClient extends MongoSyncClient implements MongoA
     // =========================================================
 
     private boolean activationsExistForConfiguration(String configurationName) {
-        // Note: no exception catch here — callers must handle MongoException so that a transient
+        // No exception catch here — a MongoException propagates to callers so that a transient
         // DB error is not silently treated as "no activations exist", which could allow an unsafe
         // category change or delete to proceed.
         final long count = mongoCollectionConfigurationActivations.countDocuments(
@@ -1165,13 +1165,13 @@ public class MongoSyncAnnotationClient extends MongoSyncClient implements MongoA
 
         // pagination
         final String pageToken = request.getPageToken();
-        final int skip;
-        try {
-            skip = (pageToken == null || pageToken.isEmpty()) ? 0
-                    : Integer.parseInt(new String(Base64.getDecoder().decode(pageToken), StandardCharsets.UTF_8));
-        } catch (IllegalArgumentException ex) {
-            logger.error("executeQueryConfigurationActivations: invalid pageToken: {}", ex.getMessage());
-            return null;
+        int skip = 0;
+        if (pageToken != null && !pageToken.isBlank()) {
+            try {
+                skip = Integer.parseInt(new String(Base64.getDecoder().decode(pageToken), StandardCharsets.UTF_8));
+            } catch (Exception e) {
+                logger.warn("executeQueryConfigurationActivations: invalid pageToken, ignoring: {}", pageToken);
+            }
         }
         int limit = request.getLimit();
         if (limit <= 0) limit = 100;
@@ -1237,9 +1237,13 @@ public class MongoSyncAnnotationClient extends MongoSyncClient implements MongoA
             final DeleteResult result = mongoCollectionConfigurationActivations.deleteOne(filter);
             if (!result.wasAcknowledged()) {
                 final String errorMsg = "deleteOne not acknowledged for compositeKey configurationName: "
-                        + configurationName;
+                        + configurationName + ", startTime: " + startTime;
                 logger.error(errorMsg);
                 return new MongoDeleteResult(true, errorMsg, null);
+            }
+            if (result.getDeletedCount() == 0) {
+                // Concurrent delete between our find and deleteOne — treat as not found.
+                return new MongoDeleteResult(false, "", null);
             }
             return new MongoDeleteResult(false, "", existing.getClientActivationId());
         } catch (MongoException ex) {
