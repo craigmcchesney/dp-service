@@ -2,7 +2,7 @@
 
 This repo is part of the Data Platform project.  The Data Platform provides tools for managing the data captured in an experimental research facility, such as a particle accelerator. The data are used within control systems and analytics applications, and facilitate the creation of machine learning models for those applications.  The [data-platform repo](https://github.com/osprey-dcs/data-platform) provides a project overview and links to the various project componnents, as well as an installer for running the latest version.
 
-This repo contains Java implementations of the Data Platform Ingestion, Query, and Annotation Service APIs defined in the [dp-grpc repo](https://github.com/osprey-dcs/dp-grpc).  The Ingestion Service provides a variety of methods for use in capturing data to the archive with a focus on the performance required to handle the data rates in an accelerator facility.  The Query Service provides methods for retrieving raw time-series data for use in machine learning applications, and higher-level APIs for retrieving tabular time-series data as well as for querying metadata and annotations in the archive.  The Annotation Service provides APIs for annotating the data in the archive and for managing PV metadata.
+This repo contains Java implementations of the Data Platform Ingestion, Query, and Annotation Service APIs defined in the [dp-grpc repo](https://github.com/osprey-dcs/dp-grpc).  The Ingestion Service provides a variety of methods for use in capturing data to the archive with a focus on the performance required to handle the data rates in an accelerator facility.  The Query Service provides methods for retrieving raw time-series data for use in machine learning applications, and higher-level APIs for retrieving tabular time-series data as well as for querying metadata and annotations in the archive.  The Annotation Service provides APIs for annotating the data in the archive and for managing PV metadata and machine configurations.
 
 The main objective of this document is to give an overview of the dp-service repo focusing on code organization, navigation and conventions in order to help a developer find the relevant code for handling a particular API method or adding a new API method.  This document contains the following sections:
 
@@ -333,7 +333,19 @@ A unique index is created on `pvName` and a regular index on `aliases`.  Aliases
 
 The Annotation Service's `savePvMetadata()` method upserts documents by `pvName`, preserving `createdAt` on updates.  `queryPvMetadata()` supports filtering by PV name, alias, tags, and attributes with AND semantics across multiple criteria and optional pagination.  `getPvMetadata()` and `deletePvMetadata()` look up a record by canonical name or alias.
 
-#### TimestmapDocument
+#### configurations
+
+The "configurations" collection contains `ConfigurationDocument` records managed by the Annotation Service. Each document stores a named machine configuration with fields: `configurationName` (unique index), `category` (index), `description`, `modifiedBy`, tags, and attributes. Managed `createdAt` and `updatedAt` timestamps are maintained automatically.
+
+The Annotation Service's `saveConfiguration()` method upserts documents by `configurationName`, preserving `createdAt` on updates. A category change is rejected if any activations exist for the configuration. `queryConfigurations()` supports filtering by name, category, tags, and attributes with AND semantics across multiple criteria and optional pagination. `getConfiguration()` and `deleteConfiguration()` look up a record by `configurationName`; deletion is blocked if any `configurationActivations` documents reference the configuration.
+
+#### configurationActivations
+
+The "configurationActivations" collection contains `ConfigurationActivationDocument` records managed by the Annotation Service. Each document represents a time-bounded activation of a named configuration, with fields: `clientActivationId` (unique sparse index; server-generated UUID if not supplied by the client), `configurationName` (index), `internalCategory` (denormalized from the referenced configuration's `category` at save time; index), `startTime` (index), `endTime` (optional index; absent means open-ended), `description`, `modifiedBy`, tags, and attributes. Managed `createdAt` and `updatedAt` timestamps are maintained automatically.
+
+The Annotation Service's `saveConfigurationActivation()` method looks up the referenced `Configuration` to set `internalCategory`, then enforces an overlap constraint: no two activations for the same `configurationName` or `internalCategory` may have overlapping time intervals. `queryConfigurationActivations()` supports filtering by timestamp, time range, configuration name, client activation ID, category, tags, and attributes. `getConfigurationActivation()` and `deleteConfigurationActivation()` look up a record by `clientActivationId` or by composite key (`configurationName` + `startTime`). `getActiveConfigurations()` returns all activations whose time interval contains a given timestamp, defaulting to the current server time if no timestamp is specified.
+
+#### TimestampDocument
 
 TimestampDocuments are not saved directly to a collection, but are embedded in several places where we want to save a protobuf Timestamp API object to a MongoDB document, containing fields for seconds and nanoseconds, converted to a Date field as a convenience.
 

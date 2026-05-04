@@ -73,4 +73,20 @@ public class BsonConstants {
     public static final String BSON_KEY_PROVIDER_METADATA_FIRST_BUCKET_TIMESTAMP = "firstBucketTimestamp";
     public static final String BSON_KEY_PROVIDER_METADATA_LAST_BUCKET_TIMESTAMP = "lastBucketTimestamp";
     public static final String BSON_KEY_PROVIDER_METADATA_NUM_BUCKETS = "numBuckets";
+
+    // configurations collection
+    public static final String BSON_KEY_CONFIGURATION_NAME = "configurationName";
+    public static final String BSON_KEY_CONFIGURATION_CATEGORY = "category";
+    public static final String BSON_KEY_CONFIGURATION_DESCRIPTION = "description";
+    public static final String BSON_KEY_CONFIGURATION_PARENT_NAME = "parentConfigurationName";
+    public static final String BSON_KEY_CONFIGURATION_MODIFIED_BY = "modifiedBy";
+
+    // configurationActivations collection
+    public static final String BSON_KEY_ACTIVATION_CLIENT_ID = "clientActivationId";
+    public static final String BSON_KEY_ACTIVATION_CONFIGURATION_NAME = "configurationName";
+    public static final String BSON_KEY_ACTIVATION_INTERNAL_CATEGORY = "internalCategory";
+    public static final String BSON_KEY_ACTIVATION_START_TIME = "startTime";
+    public static final String BSON_KEY_ACTIVATION_END_TIME = "endTime";
+    public static final String BSON_KEY_ACTIVATION_DESCRIPTION = "description";
+    public static final String BSON_KEY_ACTIVATION_MODIFIED_BY = "modifiedBy";
 }

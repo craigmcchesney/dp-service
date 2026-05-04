@@ -863,6 +863,555 @@ public class AnnotationServiceImpl extends DpAnnotationServiceGrpc.DpAnnotationS
     }
 
     // =========================================================
+    // saveConfiguration
+    // =========================================================
+
+    private static SaveConfigurationResponse saveConfigurationResponseExceptionalResult(
+            String msg, ExceptionalResult.ExceptionalResultStatus status) {
+        final ExceptionalResult exceptionalResult = ExceptionalResult.newBuilder()
+                .setExceptionalResultStatus(status)
+                .setMessage(msg)
+                .build();
+        return SaveConfigurationResponse.newBuilder()
+                .setResponseTime(TimestampUtility.getTimestampNow())
+                .setExceptionalResult(exceptionalResult)
+                .build();
+    }
+
+    public static void sendSaveConfigurationResponseReject(
+            String msg, StreamObserver<SaveConfigurationResponse> responseObserver) {
+        responseObserver.onNext(saveConfigurationResponseExceptionalResult(
+                msg, ExceptionalResult.ExceptionalResultStatus.RESULT_STATUS_REJECT));
+        responseObserver.onCompleted();
+    }
+
+    public static void sendSaveConfigurationResponseError(
+            String msg, StreamObserver<SaveConfigurationResponse> responseObserver) {
+        responseObserver.onNext(saveConfigurationResponseExceptionalResult(
+                msg, ExceptionalResult.ExceptionalResultStatus.RESULT_STATUS_ERROR));
+        responseObserver.onCompleted();
+    }
+
+    public static void sendSaveConfigurationResponseSuccess(
+            String configurationName, StreamObserver<SaveConfigurationResponse> responseObserver) {
+        final SaveConfigurationResponse.SaveConfigurationResult result =
+                SaveConfigurationResponse.SaveConfigurationResult.newBuilder()
+                        .setConfigurationName(configurationName)
+                        .build();
+        responseObserver.onNext(SaveConfigurationResponse.newBuilder()
+                .setResponseTime(TimestampUtility.getTimestampNow())
+                .setSaveConfigurationResult(result)
+                .build());
+        responseObserver.onCompleted();
+    }
+
+    @Override
+    public void saveConfiguration(
+            SaveConfigurationRequest request,
+            StreamObserver<SaveConfigurationResponse> responseObserver
+    ) {
+        logger.info("id: {} saveConfiguration request received configurationName: {}",
+                responseObserver.hashCode(), request.getConfigurationName());
+        handler.handleSaveConfiguration(request, responseObserver);
+    }
+
+    // =========================================================
+    // getConfiguration
+    // =========================================================
+
+    private static GetConfigurationResponse getConfigurationResponseExceptionalResult(
+            String msg, ExceptionalResult.ExceptionalResultStatus status) {
+        final ExceptionalResult exceptionalResult = ExceptionalResult.newBuilder()
+                .setExceptionalResultStatus(status)
+                .setMessage(msg)
+                .build();
+        return GetConfigurationResponse.newBuilder()
+                .setResponseTime(TimestampUtility.getTimestampNow())
+                .setExceptionalResult(exceptionalResult)
+                .build();
+    }
+
+    public static void sendGetConfigurationResponseReject(
+            String msg, StreamObserver<GetConfigurationResponse> responseObserver) {
+        responseObserver.onNext(getConfigurationResponseExceptionalResult(
+                msg, ExceptionalResult.ExceptionalResultStatus.RESULT_STATUS_REJECT));
+        responseObserver.onCompleted();
+    }
+
+    public static void sendGetConfigurationResponseError(
+            String msg, StreamObserver<GetConfigurationResponse> responseObserver) {
+        responseObserver.onNext(getConfigurationResponseExceptionalResult(
+                msg, ExceptionalResult.ExceptionalResultStatus.RESULT_STATUS_ERROR));
+        responseObserver.onCompleted();
+    }
+
+    public static void sendGetConfigurationResponseSuccess(
+            com.ospreydcs.dp.grpc.v1.common.Configuration configuration,
+            StreamObserver<GetConfigurationResponse> responseObserver) {
+        final GetConfigurationResponse.GetConfigurationResult result =
+                GetConfigurationResponse.GetConfigurationResult.newBuilder()
+                        .setConfiguration(configuration)
+                        .build();
+        responseObserver.onNext(GetConfigurationResponse.newBuilder()
+                .setResponseTime(TimestampUtility.getTimestampNow())
+                .setGetConfigurationResult(result)
+                .build());
+        responseObserver.onCompleted();
+    }
+
+    @Override
+    public void getConfiguration(
+            GetConfigurationRequest request,
+            StreamObserver<GetConfigurationResponse> responseObserver
+    ) {
+        logger.info("id: {} getConfiguration request received configurationName: {}",
+                responseObserver.hashCode(), request.getConfigurationName());
+        handler.handleGetConfiguration(request, responseObserver);
+    }
+
+    // =========================================================
+    // queryConfigurations
+    // =========================================================
+
+    private static QueryConfigurationsResponse queryConfigurationsResponseExceptionalResult(
+            String msg, ExceptionalResult.ExceptionalResultStatus status) {
+        final ExceptionalResult exceptionalResult = ExceptionalResult.newBuilder()
+                .setExceptionalResultStatus(status)
+                .setMessage(msg)
+                .build();
+        return QueryConfigurationsResponse.newBuilder()
+                .setResponseTime(TimestampUtility.getTimestampNow())
+                .setExceptionalResult(exceptionalResult)
+                .build();
+    }
+
+    public static void sendQueryConfigurationsResponseReject(
+            String msg, StreamObserver<QueryConfigurationsResponse> responseObserver) {
+        responseObserver.onNext(queryConfigurationsResponseExceptionalResult(
+                msg, ExceptionalResult.ExceptionalResultStatus.RESULT_STATUS_REJECT));
+        responseObserver.onCompleted();
+    }
+
+    public static void sendQueryConfigurationsResponseError(
+            String msg, StreamObserver<QueryConfigurationsResponse> responseObserver) {
+        responseObserver.onNext(queryConfigurationsResponseExceptionalResult(
+                msg, ExceptionalResult.ExceptionalResultStatus.RESULT_STATUS_ERROR));
+        responseObserver.onCompleted();
+    }
+
+    public static void sendQueryConfigurationsResponse(
+            QueryConfigurationsResponse.QueryConfigurationsResult result,
+            StreamObserver<QueryConfigurationsResponse> responseObserver) {
+        responseObserver.onNext(QueryConfigurationsResponse.newBuilder()
+                .setResponseTime(TimestampUtility.getTimestampNow())
+                .setQueryConfigurationsResult(result)
+                .build());
+        responseObserver.onCompleted();
+    }
+
+    @Override
+    public void queryConfigurations(
+            QueryConfigurationsRequest request,
+            StreamObserver<QueryConfigurationsResponse> responseObserver
+    ) {
+        logger.info("id: {} queryConfigurations request received", responseObserver.hashCode());
+        handler.handleQueryConfigurations(request, responseObserver);
+    }
+
+    // =========================================================
+    // deleteConfiguration
+    // =========================================================
+
+    private static DeleteConfigurationResponse deleteConfigurationResponseExceptionalResult(
+            String msg, ExceptionalResult.ExceptionalResultStatus status) {
+        final ExceptionalResult exceptionalResult = ExceptionalResult.newBuilder()
+                .setExceptionalResultStatus(status)
+                .setMessage(msg)
+                .build();
+        return DeleteConfigurationResponse.newBuilder()
+                .setResponseTime(TimestampUtility.getTimestampNow())
+                .setExceptionalResult(exceptionalResult)
+                .build();
+    }
+
+    public static void sendDeleteConfigurationResponseReject(
+            String msg, StreamObserver<DeleteConfigurationResponse> responseObserver) {
+        responseObserver.onNext(deleteConfigurationResponseExceptionalResult(
+                msg, ExceptionalResult.ExceptionalResultStatus.RESULT_STATUS_REJECT));
+        responseObserver.onCompleted();
+    }
+
+    public static void sendDeleteConfigurationResponseError(
+            String msg, StreamObserver<DeleteConfigurationResponse> responseObserver) {
+        responseObserver.onNext(deleteConfigurationResponseExceptionalResult(
+                msg, ExceptionalResult.ExceptionalResultStatus.RESULT_STATUS_ERROR));
+        responseObserver.onCompleted();
+    }
+
+    public static void sendDeleteConfigurationResponseSuccess(
+            String configurationName, StreamObserver<DeleteConfigurationResponse> responseObserver) {
+        final DeleteConfigurationResponse.DeleteConfigurationResult result =
+                DeleteConfigurationResponse.DeleteConfigurationResult.newBuilder()
+                        .setConfigurationName(configurationName)
+                        .build();
+        responseObserver.onNext(DeleteConfigurationResponse.newBuilder()
+                .setResponseTime(TimestampUtility.getTimestampNow())
+                .setDeleteConfigurationResult(result)
+                .build());
+        responseObserver.onCompleted();
+    }
+
+    @Override
+    public void deleteConfiguration(
+            DeleteConfigurationRequest request,
+            StreamObserver<DeleteConfigurationResponse> responseObserver
+    ) {
+        logger.info("id: {} deleteConfiguration request received configurationName: {}",
+                responseObserver.hashCode(), request.getConfigurationName());
+        handler.handleDeleteConfiguration(request, responseObserver);
+    }
+
+    // =========================================================
+    // patchConfiguration (stub — not yet implemented)
+    // =========================================================
+
+    @Override
+    public void patchConfiguration(
+            PatchConfigurationRequest request,
+            StreamObserver<PatchConfigurationResponse> responseObserver
+    ) {
+        logger.info("id: {} patchConfiguration request received", responseObserver.hashCode());
+        final ExceptionalResult exceptionalResult = ExceptionalResult.newBuilder()
+                .setExceptionalResultStatus(ExceptionalResult.ExceptionalResultStatus.RESULT_STATUS_ERROR)
+                .setMessage("patchConfiguration() is not yet implemented")
+                .build();
+        responseObserver.onNext(PatchConfigurationResponse.newBuilder()
+                .setResponseTime(TimestampUtility.getTimestampNow())
+                .setExceptionalResult(exceptionalResult)
+                .build());
+        responseObserver.onCompleted();
+    }
+
+    // =========================================================
+    // bulkSaveConfiguration (stub — not yet implemented)
+    // =========================================================
+
+    @Override
+    public void bulkSaveConfiguration(
+            BulkSaveConfigurationRequest request,
+            StreamObserver<BulkSaveConfigurationResponse> responseObserver
+    ) {
+        logger.info("id: {} bulkSaveConfiguration request received", responseObserver.hashCode());
+        final ExceptionalResult exceptionalResult = ExceptionalResult.newBuilder()
+                .setExceptionalResultStatus(ExceptionalResult.ExceptionalResultStatus.RESULT_STATUS_ERROR)
+                .setMessage("bulkSaveConfiguration() is not yet implemented")
+                .build();
+        responseObserver.onNext(BulkSaveConfigurationResponse.newBuilder()
+                .setResponseTime(TimestampUtility.getTimestampNow())
+                .setExceptionalResult(exceptionalResult)
+                .build());
+        responseObserver.onCompleted();
+    }
+
+    // =========================================================
+    // saveConfigurationActivation
+    // =========================================================
+
+    private static SaveConfigurationActivationResponse saveConfigurationActivationResponseExceptionalResult(
+            String msg, ExceptionalResult.ExceptionalResultStatus status) {
+        final ExceptionalResult exceptionalResult = ExceptionalResult.newBuilder()
+                .setExceptionalResultStatus(status)
+                .setMessage(msg)
+                .build();
+        return SaveConfigurationActivationResponse.newBuilder()
+                .setResponseTime(TimestampUtility.getTimestampNow())
+                .setExceptionalResult(exceptionalResult)
+                .build();
+    }
+
+    public static void sendSaveConfigurationActivationResponseReject(
+            String msg, StreamObserver<SaveConfigurationActivationResponse> responseObserver) {
+        responseObserver.onNext(saveConfigurationActivationResponseExceptionalResult(
+                msg, ExceptionalResult.ExceptionalResultStatus.RESULT_STATUS_REJECT));
+        responseObserver.onCompleted();
+    }
+
+    public static void sendSaveConfigurationActivationResponseError(
+            String msg, StreamObserver<SaveConfigurationActivationResponse> responseObserver) {
+        responseObserver.onNext(saveConfigurationActivationResponseExceptionalResult(
+                msg, ExceptionalResult.ExceptionalResultStatus.RESULT_STATUS_ERROR));
+        responseObserver.onCompleted();
+    }
+
+    public static void sendSaveConfigurationActivationResponseSuccess(
+            String clientActivationId, StreamObserver<SaveConfigurationActivationResponse> responseObserver) {
+        final SaveConfigurationActivationResponse.SaveConfigurationActivationResult result =
+                SaveConfigurationActivationResponse.SaveConfigurationActivationResult.newBuilder()
+                        .setClientActivationId(clientActivationId)
+                        .build();
+        responseObserver.onNext(SaveConfigurationActivationResponse.newBuilder()
+                .setResponseTime(TimestampUtility.getTimestampNow())
+                .setSaveConfigurationActivationResult(result)
+                .build());
+        responseObserver.onCompleted();
+    }
+
+    @Override
+    public void saveConfigurationActivation(
+            SaveConfigurationActivationRequest request,
+            StreamObserver<SaveConfigurationActivationResponse> responseObserver
+    ) {
+        logger.info("id: {} saveConfigurationActivation request received configurationName: {}",
+                responseObserver.hashCode(), request.getConfigurationName());
+        handler.handleSaveConfigurationActivation(request, responseObserver);
+    }
+
+    // =========================================================
+    // getConfigurationActivation
+    // =========================================================
+
+    private static GetConfigurationActivationResponse getConfigurationActivationResponseExceptionalResult(
+            String msg, ExceptionalResult.ExceptionalResultStatus status) {
+        final ExceptionalResult exceptionalResult = ExceptionalResult.newBuilder()
+                .setExceptionalResultStatus(status)
+                .setMessage(msg)
+                .build();
+        return GetConfigurationActivationResponse.newBuilder()
+                .setResponseTime(TimestampUtility.getTimestampNow())
+                .setExceptionalResult(exceptionalResult)
+                .build();
+    }
+
+    public static void sendGetConfigurationActivationResponseReject(
+            String msg, StreamObserver<GetConfigurationActivationResponse> responseObserver) {
+        responseObserver.onNext(getConfigurationActivationResponseExceptionalResult(
+                msg, ExceptionalResult.ExceptionalResultStatus.RESULT_STATUS_REJECT));
+        responseObserver.onCompleted();
+    }
+
+    public static void sendGetConfigurationActivationResponseError(
+            String msg, StreamObserver<GetConfigurationActivationResponse> responseObserver) {
+        responseObserver.onNext(getConfigurationActivationResponseExceptionalResult(
+                msg, ExceptionalResult.ExceptionalResultStatus.RESULT_STATUS_ERROR));
+        responseObserver.onCompleted();
+    }
+
+    public static void sendGetConfigurationActivationResponseSuccess(
+            com.ospreydcs.dp.grpc.v1.common.ConfigurationActivation activation,
+            StreamObserver<GetConfigurationActivationResponse> responseObserver) {
+        final GetConfigurationActivationResponse.GetConfigurationActivationResult result =
+                GetConfigurationActivationResponse.GetConfigurationActivationResult.newBuilder()
+                        .setConfigurationActivation(activation)
+                        .build();
+        responseObserver.onNext(GetConfigurationActivationResponse.newBuilder()
+                .setResponseTime(TimestampUtility.getTimestampNow())
+                .setGetConfigurationActivationResult(result)
+                .build());
+        responseObserver.onCompleted();
+    }
+
+    @Override
+    public void getConfigurationActivation(
+            GetConfigurationActivationRequest request,
+            StreamObserver<GetConfigurationActivationResponse> responseObserver
+    ) {
+        logger.info("id: {} getConfigurationActivation request received", responseObserver.hashCode());
+        handler.handleGetConfigurationActivation(request, responseObserver);
+    }
+
+    // =========================================================
+    // queryConfigurationActivations
+    // =========================================================
+
+    private static QueryConfigurationActivationsResponse queryConfigurationActivationsResponseExceptionalResult(
+            String msg, ExceptionalResult.ExceptionalResultStatus status) {
+        final ExceptionalResult exceptionalResult = ExceptionalResult.newBuilder()
+                .setExceptionalResultStatus(status)
+                .setMessage(msg)
+                .build();
+        return QueryConfigurationActivationsResponse.newBuilder()
+                .setResponseTime(TimestampUtility.getTimestampNow())
+                .setExceptionalResult(exceptionalResult)
+                .build();
+    }
+
+    public static void sendQueryConfigurationActivationsResponseReject(
+            String msg, StreamObserver<QueryConfigurationActivationsResponse> responseObserver) {
+        responseObserver.onNext(queryConfigurationActivationsResponseExceptionalResult(
+                msg, ExceptionalResult.ExceptionalResultStatus.RESULT_STATUS_REJECT));
+        responseObserver.onCompleted();
+    }
+
+    public static void sendQueryConfigurationActivationsResponseError(
+            String msg, StreamObserver<QueryConfigurationActivationsResponse> responseObserver) {
+        responseObserver.onNext(queryConfigurationActivationsResponseExceptionalResult(
+                msg, ExceptionalResult.ExceptionalResultStatus.RESULT_STATUS_ERROR));
+        responseObserver.onCompleted();
+    }
+
+    public static void sendQueryConfigurationActivationsResponse(
+            QueryConfigurationActivationsResponse.QueryConfigurationActivationsResult result,
+            StreamObserver<QueryConfigurationActivationsResponse> responseObserver) {
+        responseObserver.onNext(QueryConfigurationActivationsResponse.newBuilder()
+                .setResponseTime(TimestampUtility.getTimestampNow())
+                .setQueryConfigurationActivationsResult(result)
+                .build());
+        responseObserver.onCompleted();
+    }
+
+    @Override
+    public void queryConfigurationActivations(
+            QueryConfigurationActivationsRequest request,
+            StreamObserver<QueryConfigurationActivationsResponse> responseObserver
+    ) {
+        logger.info("id: {} queryConfigurationActivations request received", responseObserver.hashCode());
+        handler.handleQueryConfigurationActivations(request, responseObserver);
+    }
+
+    // =========================================================
+    // deleteConfigurationActivation
+    // =========================================================
+
+    private static DeleteConfigurationActivationResponse deleteConfigurationActivationResponseExceptionalResult(
+            String msg, ExceptionalResult.ExceptionalResultStatus status) {
+        final ExceptionalResult exceptionalResult = ExceptionalResult.newBuilder()
+                .setExceptionalResultStatus(status)
+                .setMessage(msg)
+                .build();
+        return DeleteConfigurationActivationResponse.newBuilder()
+                .setResponseTime(TimestampUtility.getTimestampNow())
+                .setExceptionalResult(exceptionalResult)
+                .build();
+    }
+
+    public static void sendDeleteConfigurationActivationResponseReject(
+            String msg, StreamObserver<DeleteConfigurationActivationResponse> responseObserver) {
+        responseObserver.onNext(deleteConfigurationActivationResponseExceptionalResult(
+                msg, ExceptionalResult.ExceptionalResultStatus.RESULT_STATUS_REJECT));
+        responseObserver.onCompleted();
+    }
+
+    public static void sendDeleteConfigurationActivationResponseError(
+            String msg, StreamObserver<DeleteConfigurationActivationResponse> responseObserver) {
+        responseObserver.onNext(deleteConfigurationActivationResponseExceptionalResult(
+                msg, ExceptionalResult.ExceptionalResultStatus.RESULT_STATUS_ERROR));
+        responseObserver.onCompleted();
+    }
+
+    public static void sendDeleteConfigurationActivationResponseSuccess(
+            String clientActivationId, StreamObserver<DeleteConfigurationActivationResponse> responseObserver) {
+        final DeleteConfigurationActivationResponse.DeleteConfigurationActivationResult result =
+                DeleteConfigurationActivationResponse.DeleteConfigurationActivationResult.newBuilder()
+                        .setClientActivationId(clientActivationId)
+                        .build();
+        responseObserver.onNext(DeleteConfigurationActivationResponse.newBuilder()
+                .setResponseTime(TimestampUtility.getTimestampNow())
+                .setDeleteConfigurationActivationResult(result)
+                .build());
+        responseObserver.onCompleted();
+    }
+
+    @Override
+    public void deleteConfigurationActivation(
+            DeleteConfigurationActivationRequest request,
+            StreamObserver<DeleteConfigurationActivationResponse> responseObserver
+    ) {
+        logger.info("id: {} deleteConfigurationActivation request received", responseObserver.hashCode());
+        handler.handleDeleteConfigurationActivation(request, responseObserver);
+    }
+
+    // =========================================================
+    // patchConfigurationActivation (stub — not yet implemented)
+    // =========================================================
+
+    @Override
+    public void patchConfigurationActivation(
+            PatchConfigurationActivationRequest request,
+            StreamObserver<PatchConfigurationActivationResponse> responseObserver
+    ) {
+        logger.info("id: {} patchConfigurationActivation request received", responseObserver.hashCode());
+        final ExceptionalResult exceptionalResult = ExceptionalResult.newBuilder()
+                .setExceptionalResultStatus(ExceptionalResult.ExceptionalResultStatus.RESULT_STATUS_ERROR)
+                .setMessage("patchConfigurationActivation() is not yet implemented")
+                .build();
+        responseObserver.onNext(PatchConfigurationActivationResponse.newBuilder()
+                .setResponseTime(TimestampUtility.getTimestampNow())
+                .setExceptionalResult(exceptionalResult)
+                .build());
+        responseObserver.onCompleted();
+    }
+
+    // =========================================================
+    // bulkSaveConfigurationActivation (stub — not yet implemented)
+    // =========================================================
+
+    @Override
+    public void bulkSaveConfigurationActivation(
+            BulkSaveConfigurationActivationRequest request,
+            StreamObserver<BulkSaveConfigurationActivationResponse> responseObserver
+    ) {
+        logger.info("id: {} bulkSaveConfigurationActivation request received", responseObserver.hashCode());
+        final ExceptionalResult exceptionalResult = ExceptionalResult.newBuilder()
+                .setExceptionalResultStatus(ExceptionalResult.ExceptionalResultStatus.RESULT_STATUS_ERROR)
+                .setMessage("bulkSaveConfigurationActivation() is not yet implemented")
+                .build();
+        responseObserver.onNext(BulkSaveConfigurationActivationResponse.newBuilder()
+                .setResponseTime(TimestampUtility.getTimestampNow())
+                .setExceptionalResult(exceptionalResult)
+                .build());
+        responseObserver.onCompleted();
+    }
+
+    // =========================================================
+    // getActiveConfigurations
+    // =========================================================
+
+    private static GetActiveConfigurationsResponse getActiveConfigurationsResponseExceptionalResult(
+            String msg, ExceptionalResult.ExceptionalResultStatus status) {
+        final ExceptionalResult exceptionalResult = ExceptionalResult.newBuilder()
+                .setExceptionalResultStatus(status)
+                .setMessage(msg)
+                .build();
+        return GetActiveConfigurationsResponse.newBuilder()
+                .setResponseTime(TimestampUtility.getTimestampNow())
+                .setExceptionalResult(exceptionalResult)
+                .build();
+    }
+
+    public static void sendGetActiveConfigurationsResponseReject(
+            String msg, StreamObserver<GetActiveConfigurationsResponse> responseObserver) {
+        responseObserver.onNext(getActiveConfigurationsResponseExceptionalResult(
+                msg, ExceptionalResult.ExceptionalResultStatus.RESULT_STATUS_REJECT));
+        responseObserver.onCompleted();
+    }
+
+    public static void sendGetActiveConfigurationsResponseError(
+            String msg, StreamObserver<GetActiveConfigurationsResponse> responseObserver) {
+        responseObserver.onNext(getActiveConfigurationsResponseExceptionalResult(
+                msg, ExceptionalResult.ExceptionalResultStatus.RESULT_STATUS_ERROR));
+        responseObserver.onCompleted();
+    }
+
+    public static void sendGetActiveConfigurationsResponse(
+            GetActiveConfigurationsResponse.GetActiveConfigurationsResult result,
+            StreamObserver<GetActiveConfigurationsResponse> responseObserver) {
+        responseObserver.onNext(GetActiveConfigurationsResponse.newBuilder()
+                .setResponseTime(TimestampUtility.getTimestampNow())
+                .setGetActiveConfigurationsResult(result)
+                .build());
+        responseObserver.onCompleted();
+    }
+
+    @Override
+    public void getActiveConfigurations(
+            GetActiveConfigurationsRequest request,
+            StreamObserver<GetActiveConfigurationsResponse> responseObserver
+    ) {
+        logger.info("id: {} getActiveConfigurations request received", responseObserver.hashCode());
+        handler.handleGetActiveConfigurations(request, responseObserver);
+    }
+
+    // =========================================================
     // patchPvMetadata (stub — not yet implemented)
     // =========================================================
 

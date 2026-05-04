@@ -342,4 +342,162 @@ public class MongoAnnotationHandler extends QueueHandlerBase implements Annotati
         }
     }
 
+    @Override
+    public void handleSaveConfiguration(
+            SaveConfigurationRequest request,
+            StreamObserver<SaveConfigurationResponse> responseObserver
+    ) {
+        final SaveConfigurationJob job = new SaveConfigurationJob(request, responseObserver, mongoAnnotationClient);
+
+        logger.debug("adding SaveConfigurationJob id: {} to queue", responseObserver.hashCode());
+
+        try {
+            requestQueue.put(job);
+        } catch (InterruptedException e) {
+            logger.error("InterruptedException waiting for requestQueue.put");
+            Thread.currentThread().interrupt();
+        }
+    }
+
+    @Override
+    public void handleGetConfiguration(
+            GetConfigurationRequest request,
+            StreamObserver<GetConfigurationResponse> responseObserver
+    ) {
+        final GetConfigurationJob job = new GetConfigurationJob(request, responseObserver, mongoAnnotationClient);
+
+        logger.debug("adding GetConfigurationJob id: {} to queue", responseObserver.hashCode());
+
+        try {
+            requestQueue.put(job);
+        } catch (InterruptedException e) {
+            logger.error("InterruptedException waiting for requestQueue.put");
+            Thread.currentThread().interrupt();
+        }
+    }
+
+    @Override
+    public void handleQueryConfigurations(
+            QueryConfigurationsRequest request,
+            StreamObserver<QueryConfigurationsResponse> responseObserver
+    ) {
+        final QueryConfigurationsJob job = new QueryConfigurationsJob(request, responseObserver, mongoAnnotationClient);
+
+        logger.debug("adding QueryConfigurationsJob id: {} to queue", responseObserver.hashCode());
+
+        try {
+            requestQueue.put(job);
+        } catch (InterruptedException e) {
+            logger.error("InterruptedException waiting for requestQueue.put");
+            Thread.currentThread().interrupt();
+        }
+    }
+
+    @Override
+    public void handleDeleteConfiguration(
+            DeleteConfigurationRequest request,
+            StreamObserver<DeleteConfigurationResponse> responseObserver
+    ) {
+        final DeleteConfigurationJob job = new DeleteConfigurationJob(request, responseObserver, mongoAnnotationClient);
+
+        logger.debug("adding DeleteConfigurationJob id: {} to queue", responseObserver.hashCode());
+
+        try {
+            requestQueue.put(job);
+        } catch (InterruptedException e) {
+            logger.error("InterruptedException waiting for requestQueue.put");
+            Thread.currentThread().interrupt();
+        }
+    }
+
+    @Override
+    public void handleSaveConfigurationActivation(
+            SaveConfigurationActivationRequest request,
+            StreamObserver<SaveConfigurationActivationResponse> responseObserver
+    ) {
+        final SaveConfigurationActivationJob job =
+                new SaveConfigurationActivationJob(request, responseObserver, mongoAnnotationClient);
+
+        logger.debug("adding SaveConfigurationActivationJob id: {} to queue", responseObserver.hashCode());
+
+        try {
+            requestQueue.put(job);
+        } catch (InterruptedException e) {
+            logger.error("InterruptedException waiting for requestQueue.put");
+            Thread.currentThread().interrupt();
+        }
+    }
+
+    @Override
+    public void handleGetConfigurationActivation(
+            GetConfigurationActivationRequest request,
+            StreamObserver<GetConfigurationActivationResponse> responseObserver
+    ) {
+        final GetConfigurationActivationJob job =
+                new GetConfigurationActivationJob(request, responseObserver, mongoAnnotationClient);
+
+        logger.debug("adding GetConfigurationActivationJob id: {} to queue", responseObserver.hashCode());
+
+        try {
+            requestQueue.put(job);
+        } catch (InterruptedException e) {
+            logger.error("InterruptedException waiting for requestQueue.put");
+            Thread.currentThread().interrupt();
+        }
+    }
+
+    @Override
+    public void handleQueryConfigurationActivations(
+            QueryConfigurationActivationsRequest request,
+            StreamObserver<QueryConfigurationActivationsResponse> responseObserver
+    ) {
+        final QueryConfigurationActivationsJob job =
+                new QueryConfigurationActivationsJob(request, responseObserver, mongoAnnotationClient);
+
+        logger.debug("adding QueryConfigurationActivationsJob id: {} to queue", responseObserver.hashCode());
+
+        try {
+            requestQueue.put(job);
+        } catch (InterruptedException e) {
+            logger.error("InterruptedException waiting for requestQueue.put");
+            Thread.currentThread().interrupt();
+        }
+    }
+
+    @Override
+    public void handleDeleteConfigurationActivation(
+            DeleteConfigurationActivationRequest request,
+            StreamObserver<DeleteConfigurationActivationResponse> responseObserver
+    ) {
+        final DeleteConfigurationActivationJob job =
+                new DeleteConfigurationActivationJob(request, responseObserver, mongoAnnotationClient);
+
+        logger.debug("adding DeleteConfigurationActivationJob id: {} to queue", responseObserver.hashCode());
+
+        try {
+            requestQueue.put(job);
+        } catch (InterruptedException e) {
+            logger.error("InterruptedException waiting for requestQueue.put");
+            Thread.currentThread().interrupt();
+        }
+    }
+
+    @Override
+    public void handleGetActiveConfigurations(
+            GetActiveConfigurationsRequest request,
+            StreamObserver<GetActiveConfigurationsResponse> responseObserver
+    ) {
+        final GetActiveConfigurationsJob job =
+                new GetActiveConfigurationsJob(request, responseObserver, mongoAnnotationClient);
+
+        logger.debug("adding GetActiveConfigurationsJob id: {} to queue", responseObserver.hashCode());
+
+        try {
+            requestQueue.put(job);
+        } catch (InterruptedException e) {
+            logger.error("InterruptedException waiting for requestQueue.put");
+            Thread.currentThread().interrupt();
+        }
+    }
+
 }

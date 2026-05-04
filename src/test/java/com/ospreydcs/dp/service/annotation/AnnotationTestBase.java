@@ -1565,4 +1565,555 @@ public class AnnotationTestBase {
                 .build();
     }
 
+    // =========================================================================
+    // Configuration response observers, params, and request builders
+    // =========================================================================
+
+    public static class SaveConfigurationResponseObserver implements StreamObserver<SaveConfigurationResponse> {
+
+        private final CountDownLatch finishLatch = new CountDownLatch(1);
+        private final AtomicBoolean isError = new AtomicBoolean(false);
+        private final List<String> errorMessageList = Collections.synchronizedList(new ArrayList<>());
+        private final List<String> configNameList = Collections.synchronizedList(new ArrayList<>());
+
+        public void await() {
+            try { finishLatch.await(1, TimeUnit.MINUTES); }
+            catch (InterruptedException e) { isError.set(true); errorMessageList.add("await interrupted"); }
+        }
+        public boolean isError() { return isError.get(); }
+        public String getErrorMessage() { return errorMessageList.isEmpty() ? "" : errorMessageList.get(0); }
+        public String getConfigurationName() { return configNameList.isEmpty() ? null : configNameList.get(0); }
+
+        @Override
+        public void onNext(SaveConfigurationResponse response) {
+            new Thread(() -> {
+                if (response.hasExceptionalResult()) {
+                    isError.set(true);
+                    errorMessageList.add(response.getExceptionalResult().getMessage());
+                    finishLatch.countDown();
+                    return;
+                }
+                assertTrue(response.hasSaveConfigurationResult());
+                configNameList.add(response.getSaveConfigurationResult().getConfigurationName());
+                finishLatch.countDown();
+            }).start();
+        }
+        @Override public void onError(Throwable t) {
+            new Thread(() -> {
+                isError.set(true); errorMessageList.add("onError: " + Status.fromThrowable(t)); finishLatch.countDown();
+            }).start();
+        }
+        @Override public void onCompleted() {}
+    }
+
+    public static class GetConfigurationResponseObserver implements StreamObserver<GetConfigurationResponse> {
+
+        private final CountDownLatch finishLatch = new CountDownLatch(1);
+        private final AtomicBoolean isError = new AtomicBoolean(false);
+        private final List<String> errorMessageList = Collections.synchronizedList(new ArrayList<>());
+        private final List<com.ospreydcs.dp.grpc.v1.common.Configuration> configList =
+                Collections.synchronizedList(new ArrayList<>());
+
+        public void await() {
+            try { finishLatch.await(1, TimeUnit.MINUTES); }
+            catch (InterruptedException e) { isError.set(true); errorMessageList.add("await interrupted"); }
+        }
+        public boolean isError() { return isError.get(); }
+        public String getErrorMessage() { return errorMessageList.isEmpty() ? "" : errorMessageList.get(0); }
+        public com.ospreydcs.dp.grpc.v1.common.Configuration getConfiguration() {
+            return configList.isEmpty() ? null : configList.get(0);
+        }
+
+        @Override
+        public void onNext(GetConfigurationResponse response) {
+            new Thread(() -> {
+                if (response.hasExceptionalResult()) {
+                    isError.set(true);
+                    errorMessageList.add(response.getExceptionalResult().getMessage());
+                    finishLatch.countDown();
+                    return;
+                }
+                assertTrue(response.hasGetConfigurationResult());
+                configList.add(response.getGetConfigurationResult().getConfiguration());
+                finishLatch.countDown();
+            }).start();
+        }
+        @Override public void onError(Throwable t) {
+            new Thread(() -> {
+                isError.set(true); errorMessageList.add("onError: " + Status.fromThrowable(t)); finishLatch.countDown();
+            }).start();
+        }
+        @Override public void onCompleted() {}
+    }
+
+    public static class QueryConfigurationsResponseObserver implements StreamObserver<QueryConfigurationsResponse> {
+
+        private final CountDownLatch finishLatch = new CountDownLatch(1);
+        private final AtomicBoolean isError = new AtomicBoolean(false);
+        private final List<String> errorMessageList = Collections.synchronizedList(new ArrayList<>());
+        private final List<com.ospreydcs.dp.grpc.v1.common.Configuration> configList =
+                Collections.synchronizedList(new ArrayList<>());
+        private String nextPageToken = "";
+
+        public void await() {
+            try { finishLatch.await(1, TimeUnit.MINUTES); }
+            catch (InterruptedException e) { isError.set(true); errorMessageList.add("await interrupted"); }
+        }
+        public boolean isError() { return isError.get(); }
+        public String getErrorMessage() { return errorMessageList.isEmpty() ? "" : errorMessageList.get(0); }
+        public List<com.ospreydcs.dp.grpc.v1.common.Configuration> getConfigurationList() { return configList; }
+        public String getNextPageToken() { return nextPageToken; }
+
+        @Override
+        public void onNext(QueryConfigurationsResponse response) {
+            new Thread(() -> {
+                if (response.hasExceptionalResult()) {
+                    isError.set(true);
+                    errorMessageList.add(response.getExceptionalResult().getMessage());
+                    finishLatch.countDown();
+                    return;
+                }
+                assertTrue(response.hasQueryConfigurationsResult());
+                configList.addAll(response.getQueryConfigurationsResult().getConfigurationsList());
+                nextPageToken = response.getQueryConfigurationsResult().getNextPageToken();
+                finishLatch.countDown();
+            }).start();
+        }
+        @Override public void onError(Throwable t) {
+            new Thread(() -> {
+                isError.set(true); errorMessageList.add("onError: " + Status.fromThrowable(t)); finishLatch.countDown();
+            }).start();
+        }
+        @Override public void onCompleted() {}
+    }
+
+    public static class DeleteConfigurationResponseObserver implements StreamObserver<DeleteConfigurationResponse> {
+
+        private final CountDownLatch finishLatch = new CountDownLatch(1);
+        private final AtomicBoolean isError = new AtomicBoolean(false);
+        private final List<String> errorMessageList = Collections.synchronizedList(new ArrayList<>());
+        private final List<String> configNameList = Collections.synchronizedList(new ArrayList<>());
+
+        public void await() {
+            try { finishLatch.await(1, TimeUnit.MINUTES); }
+            catch (InterruptedException e) { isError.set(true); errorMessageList.add("await interrupted"); }
+        }
+        public boolean isError() { return isError.get(); }
+        public String getErrorMessage() { return errorMessageList.isEmpty() ? "" : errorMessageList.get(0); }
+        public String getConfigurationName() { return configNameList.isEmpty() ? null : configNameList.get(0); }
+
+        @Override
+        public void onNext(DeleteConfigurationResponse response) {
+            new Thread(() -> {
+                if (response.hasExceptionalResult()) {
+                    isError.set(true);
+                    errorMessageList.add(response.getExceptionalResult().getMessage());
+                    finishLatch.countDown();
+                    return;
+                }
+                assertTrue(response.hasDeleteConfigurationResult());
+                configNameList.add(response.getDeleteConfigurationResult().getConfigurationName());
+                finishLatch.countDown();
+            }).start();
+        }
+        @Override public void onError(Throwable t) {
+            new Thread(() -> {
+                isError.set(true); errorMessageList.add("onError: " + Status.fromThrowable(t)); finishLatch.countDown();
+            }).start();
+        }
+        @Override public void onCompleted() {}
+    }
+
+    public static class PatchConfigurationResponseObserver implements StreamObserver<PatchConfigurationResponse> {
+        private final CountDownLatch finishLatch = new CountDownLatch(1);
+        private final AtomicBoolean isError = new AtomicBoolean(false);
+        private final List<String> errorMessageList = Collections.synchronizedList(new ArrayList<>());
+        public void await() {
+            try { finishLatch.await(1, TimeUnit.MINUTES); }
+            catch (InterruptedException e) { isError.set(true); errorMessageList.add("await interrupted"); }
+        }
+        public boolean isError() { return isError.get(); }
+        public String getErrorMessage() { return errorMessageList.isEmpty() ? "" : errorMessageList.get(0); }
+        @Override public void onNext(PatchConfigurationResponse response) {
+            if (response.hasExceptionalResult()) { isError.set(true); errorMessageList.add(response.getExceptionalResult().getMessage()); }
+            finishLatch.countDown();
+        }
+        @Override public void onError(Throwable t) { isError.set(true); errorMessageList.add("onError: " + Status.fromThrowable(t)); finishLatch.countDown(); }
+        @Override public void onCompleted() {}
+    }
+
+    public static class BulkSaveConfigurationResponseObserver implements StreamObserver<BulkSaveConfigurationResponse> {
+        private final CountDownLatch finishLatch = new CountDownLatch(1);
+        private final AtomicBoolean isError = new AtomicBoolean(false);
+        private final List<String> errorMessageList = Collections.synchronizedList(new ArrayList<>());
+        public void await() {
+            try { finishLatch.await(1, TimeUnit.MINUTES); }
+            catch (InterruptedException e) { isError.set(true); errorMessageList.add("await interrupted"); }
+        }
+        public boolean isError() { return isError.get(); }
+        public String getErrorMessage() { return errorMessageList.isEmpty() ? "" : errorMessageList.get(0); }
+        @Override public void onNext(BulkSaveConfigurationResponse response) {
+            if (response.hasExceptionalResult()) { isError.set(true); errorMessageList.add(response.getExceptionalResult().getMessage()); }
+            finishLatch.countDown();
+        }
+        @Override public void onError(Throwable t) { isError.set(true); errorMessageList.add("onError: " + Status.fromThrowable(t)); finishLatch.countDown(); }
+        @Override public void onCompleted() {}
+    }
+
+    public record SaveConfigurationParams(
+            String configurationName,
+            String category,
+            String description,
+            String parentConfigurationName,
+            List<String> tags,
+            List<com.ospreydcs.dp.grpc.v1.common.Attribute> attributes,
+            String modifiedBy
+    ) {}
+
+    public static SaveConfigurationRequest buildSaveConfigurationRequest(SaveConfigurationParams params) {
+        final SaveConfigurationRequest.Builder builder = SaveConfigurationRequest.newBuilder();
+        if (params.configurationName() != null) builder.setConfigurationName(params.configurationName());
+        if (params.category() != null) builder.setCategory(params.category());
+        if (params.description() != null) builder.setDescription(params.description());
+        if (params.parentConfigurationName() != null) builder.setParentConfigurationName(params.parentConfigurationName());
+        if (params.tags() != null) builder.addAllTags(params.tags());
+        if (params.attributes() != null) builder.addAllAttributes(params.attributes());
+        if (params.modifiedBy() != null) builder.setModifiedBy(params.modifiedBy());
+        return builder.build();
+    }
+
+    public static GetConfigurationRequest buildGetConfigurationRequest(String configurationName) {
+        return GetConfigurationRequest.newBuilder().setConfigurationName(configurationName).build();
+    }
+
+    public static QueryConfigurationsRequest buildQueryConfigurationsRequest(
+            List<QueryConfigurationsRequest.QueryConfigurationsCriterion> criteria, int limit, String pageToken) {
+        final QueryConfigurationsRequest.Builder builder = QueryConfigurationsRequest.newBuilder();
+        builder.addAllCriteria(criteria);
+        if (limit > 0) builder.setLimit(limit);
+        if (pageToken != null && !pageToken.isBlank()) builder.setPageToken(pageToken);
+        return builder.build();
+    }
+
+    public static DeleteConfigurationRequest buildDeleteConfigurationRequest(String configurationName) {
+        return DeleteConfigurationRequest.newBuilder().setConfigurationName(configurationName).build();
+    }
+
+    // =========================================================================
+    // Configuration Activation response observers, params, and request builders
+    // =========================================================================
+
+    public static class SaveConfigurationActivationResponseObserver
+            implements StreamObserver<SaveConfigurationActivationResponse> {
+
+        private final CountDownLatch finishLatch = new CountDownLatch(1);
+        private final AtomicBoolean isError = new AtomicBoolean(false);
+        private final List<String> errorMessageList = Collections.synchronizedList(new ArrayList<>());
+        private final List<String> idList = Collections.synchronizedList(new ArrayList<>());
+
+        public void await() {
+            try { finishLatch.await(1, TimeUnit.MINUTES); }
+            catch (InterruptedException e) { isError.set(true); errorMessageList.add("await interrupted"); }
+        }
+        public boolean isError() { return isError.get(); }
+        public String getErrorMessage() { return errorMessageList.isEmpty() ? "" : errorMessageList.get(0); }
+        public String getClientActivationId() { return idList.isEmpty() ? null : idList.get(0); }
+
+        @Override
+        public void onNext(SaveConfigurationActivationResponse response) {
+            new Thread(() -> {
+                if (response.hasExceptionalResult()) {
+                    isError.set(true);
+                    errorMessageList.add(response.getExceptionalResult().getMessage());
+                    finishLatch.countDown();
+                    return;
+                }
+                assertTrue(response.hasSaveConfigurationActivationResult());
+                idList.add(response.getSaveConfigurationActivationResult().getClientActivationId());
+                finishLatch.countDown();
+            }).start();
+        }
+        @Override public void onError(Throwable t) {
+            new Thread(() -> {
+                isError.set(true); errorMessageList.add("onError: " + Status.fromThrowable(t)); finishLatch.countDown();
+            }).start();
+        }
+        @Override public void onCompleted() {}
+    }
+
+    public static class GetConfigurationActivationResponseObserver
+            implements StreamObserver<GetConfigurationActivationResponse> {
+
+        private final CountDownLatch finishLatch = new CountDownLatch(1);
+        private final AtomicBoolean isError = new AtomicBoolean(false);
+        private final List<String> errorMessageList = Collections.synchronizedList(new ArrayList<>());
+        private final List<com.ospreydcs.dp.grpc.v1.common.ConfigurationActivation> activationList =
+                Collections.synchronizedList(new ArrayList<>());
+
+        public void await() {
+            try { finishLatch.await(1, TimeUnit.MINUTES); }
+            catch (InterruptedException e) { isError.set(true); errorMessageList.add("await interrupted"); }
+        }
+        public boolean isError() { return isError.get(); }
+        public String getErrorMessage() { return errorMessageList.isEmpty() ? "" : errorMessageList.get(0); }
+        public com.ospreydcs.dp.grpc.v1.common.ConfigurationActivation getConfigurationActivation() {
+            return activationList.isEmpty() ? null : activationList.get(0);
+        }
+
+        @Override
+        public void onNext(GetConfigurationActivationResponse response) {
+            new Thread(() -> {
+                if (response.hasExceptionalResult()) {
+                    isError.set(true);
+                    errorMessageList.add(response.getExceptionalResult().getMessage());
+                    finishLatch.countDown();
+                    return;
+                }
+                assertTrue(response.hasGetConfigurationActivationResult());
+                activationList.add(response.getGetConfigurationActivationResult().getConfigurationActivation());
+                finishLatch.countDown();
+            }).start();
+        }
+        @Override public void onError(Throwable t) {
+            new Thread(() -> {
+                isError.set(true); errorMessageList.add("onError: " + Status.fromThrowable(t)); finishLatch.countDown();
+            }).start();
+        }
+        @Override public void onCompleted() {}
+    }
+
+    public static class QueryConfigurationActivationsResponseObserver
+            implements StreamObserver<QueryConfigurationActivationsResponse> {
+
+        private final CountDownLatch finishLatch = new CountDownLatch(1);
+        private final AtomicBoolean isError = new AtomicBoolean(false);
+        private final List<String> errorMessageList = Collections.synchronizedList(new ArrayList<>());
+        private final List<com.ospreydcs.dp.grpc.v1.common.ConfigurationActivation> activationList =
+                Collections.synchronizedList(new ArrayList<>());
+        private String nextPageToken = "";
+
+        public void await() {
+            try { finishLatch.await(1, TimeUnit.MINUTES); }
+            catch (InterruptedException e) { isError.set(true); errorMessageList.add("await interrupted"); }
+        }
+        public boolean isError() { return isError.get(); }
+        public String getErrorMessage() { return errorMessageList.isEmpty() ? "" : errorMessageList.get(0); }
+        public List<com.ospreydcs.dp.grpc.v1.common.ConfigurationActivation> getActivationList() { return activationList; }
+        public String getNextPageToken() { return nextPageToken; }
+
+        @Override
+        public void onNext(QueryConfigurationActivationsResponse response) {
+            new Thread(() -> {
+                if (response.hasExceptionalResult()) {
+                    isError.set(true);
+                    errorMessageList.add(response.getExceptionalResult().getMessage());
+                    finishLatch.countDown();
+                    return;
+                }
+                assertTrue(response.hasQueryConfigurationActivationsResult());
+                activationList.addAll(
+                        response.getQueryConfigurationActivationsResult().getConfigurationActivationsList());
+                nextPageToken = response.getQueryConfigurationActivationsResult().getNextPageToken();
+                finishLatch.countDown();
+            }).start();
+        }
+        @Override public void onError(Throwable t) {
+            new Thread(() -> {
+                isError.set(true); errorMessageList.add("onError: " + Status.fromThrowable(t)); finishLatch.countDown();
+            }).start();
+        }
+        @Override public void onCompleted() {}
+    }
+
+    public static class DeleteConfigurationActivationResponseObserver
+            implements StreamObserver<DeleteConfigurationActivationResponse> {
+
+        private final CountDownLatch finishLatch = new CountDownLatch(1);
+        private final AtomicBoolean isError = new AtomicBoolean(false);
+        private final List<String> errorMessageList = Collections.synchronizedList(new ArrayList<>());
+        private final List<String> idList = Collections.synchronizedList(new ArrayList<>());
+
+        public void await() {
+            try { finishLatch.await(1, TimeUnit.MINUTES); }
+            catch (InterruptedException e) { isError.set(true); errorMessageList.add("await interrupted"); }
+        }
+        public boolean isError() { return isError.get(); }
+        public String getErrorMessage() { return errorMessageList.isEmpty() ? "" : errorMessageList.get(0); }
+        public String getClientActivationId() { return idList.isEmpty() ? null : idList.get(0); }
+
+        @Override
+        public void onNext(DeleteConfigurationActivationResponse response) {
+            new Thread(() -> {
+                if (response.hasExceptionalResult()) {
+                    isError.set(true);
+                    errorMessageList.add(response.getExceptionalResult().getMessage());
+                    finishLatch.countDown();
+                    return;
+                }
+                assertTrue(response.hasDeleteConfigurationActivationResult());
+                idList.add(response.getDeleteConfigurationActivationResult().getClientActivationId());
+                finishLatch.countDown();
+            }).start();
+        }
+        @Override public void onError(Throwable t) {
+            new Thread(() -> {
+                isError.set(true); errorMessageList.add("onError: " + Status.fromThrowable(t)); finishLatch.countDown();
+            }).start();
+        }
+        @Override public void onCompleted() {}
+    }
+
+    public static class GetActiveConfigurationsResponseObserver
+            implements StreamObserver<GetActiveConfigurationsResponse> {
+
+        private final CountDownLatch finishLatch = new CountDownLatch(1);
+        private final AtomicBoolean isError = new AtomicBoolean(false);
+        private final List<String> errorMessageList = Collections.synchronizedList(new ArrayList<>());
+        private final List<com.ospreydcs.dp.grpc.v1.common.ConfigurationActivation> activationList =
+                Collections.synchronizedList(new ArrayList<>());
+
+        public void await() {
+            try { finishLatch.await(1, TimeUnit.MINUTES); }
+            catch (InterruptedException e) { isError.set(true); errorMessageList.add("await interrupted"); }
+        }
+        public boolean isError() { return isError.get(); }
+        public String getErrorMessage() { return errorMessageList.isEmpty() ? "" : errorMessageList.get(0); }
+        public List<com.ospreydcs.dp.grpc.v1.common.ConfigurationActivation> getActivationList() { return activationList; }
+
+        @Override
+        public void onNext(GetActiveConfigurationsResponse response) {
+            new Thread(() -> {
+                if (response.hasExceptionalResult()) {
+                    isError.set(true);
+                    errorMessageList.add(response.getExceptionalResult().getMessage());
+                    finishLatch.countDown();
+                    return;
+                }
+                assertTrue(response.hasGetActiveConfigurationsResult());
+                activationList.addAll(
+                        response.getGetActiveConfigurationsResult().getConfigurationActivationsList());
+                finishLatch.countDown();
+            }).start();
+        }
+        @Override public void onError(Throwable t) {
+            new Thread(() -> {
+                isError.set(true); errorMessageList.add("onError: " + Status.fromThrowable(t)); finishLatch.countDown();
+            }).start();
+        }
+        @Override public void onCompleted() {}
+    }
+
+    public static class PatchConfigurationActivationResponseObserver
+            implements StreamObserver<PatchConfigurationActivationResponse> {
+        private final CountDownLatch finishLatch = new CountDownLatch(1);
+        private final AtomicBoolean isError = new AtomicBoolean(false);
+        private final List<String> errorMessageList = Collections.synchronizedList(new ArrayList<>());
+        public void await() {
+            try { finishLatch.await(1, TimeUnit.MINUTES); }
+            catch (InterruptedException e) { isError.set(true); errorMessageList.add("await interrupted"); }
+        }
+        public boolean isError() { return isError.get(); }
+        public String getErrorMessage() { return errorMessageList.isEmpty() ? "" : errorMessageList.get(0); }
+        @Override public void onNext(PatchConfigurationActivationResponse response) {
+            if (response.hasExceptionalResult()) { isError.set(true); errorMessageList.add(response.getExceptionalResult().getMessage()); }
+            finishLatch.countDown();
+        }
+        @Override public void onError(Throwable t) { isError.set(true); errorMessageList.add("onError: " + Status.fromThrowable(t)); finishLatch.countDown(); }
+        @Override public void onCompleted() {}
+    }
+
+    public static class BulkSaveConfigurationActivationResponseObserver
+            implements StreamObserver<BulkSaveConfigurationActivationResponse> {
+        private final CountDownLatch finishLatch = new CountDownLatch(1);
+        private final AtomicBoolean isError = new AtomicBoolean(false);
+        private final List<String> errorMessageList = Collections.synchronizedList(new ArrayList<>());
+        public void await() {
+            try { finishLatch.await(1, TimeUnit.MINUTES); }
+            catch (InterruptedException e) { isError.set(true); errorMessageList.add("await interrupted"); }
+        }
+        public boolean isError() { return isError.get(); }
+        public String getErrorMessage() { return errorMessageList.isEmpty() ? "" : errorMessageList.get(0); }
+        @Override public void onNext(BulkSaveConfigurationActivationResponse response) {
+            if (response.hasExceptionalResult()) { isError.set(true); errorMessageList.add(response.getExceptionalResult().getMessage()); }
+            finishLatch.countDown();
+        }
+        @Override public void onError(Throwable t) { isError.set(true); errorMessageList.add("onError: " + Status.fromThrowable(t)); finishLatch.countDown(); }
+        @Override public void onCompleted() {}
+    }
+
+    public record SaveConfigurationActivationParams(
+            String clientActivationId,
+            String configurationName,
+            Timestamp startTime,
+            Timestamp endTime,
+            String description,
+            List<String> tags,
+            List<com.ospreydcs.dp.grpc.v1.common.Attribute> attributes,
+            String modifiedBy
+    ) {}
+
+    public static SaveConfigurationActivationRequest buildSaveConfigurationActivationRequest(
+            SaveConfigurationActivationParams params) {
+        final SaveConfigurationActivationRequest.Builder builder =
+                SaveConfigurationActivationRequest.newBuilder();
+        if (params.clientActivationId() != null) builder.setClientActivationId(params.clientActivationId());
+        if (params.configurationName() != null) builder.setConfigurationName(params.configurationName());
+        if (params.startTime() != null) builder.setStartTime(params.startTime());
+        if (params.endTime() != null) builder.setEndTime(params.endTime());
+        if (params.description() != null) builder.setDescription(params.description());
+        if (params.tags() != null) builder.addAllTags(params.tags());
+        if (params.attributes() != null) builder.addAllAttributes(params.attributes());
+        if (params.modifiedBy() != null) builder.setModifiedBy(params.modifiedBy());
+        return builder.build();
+    }
+
+    public static GetConfigurationActivationRequest buildGetConfigurationActivationByIdRequest(
+            String clientActivationId) {
+        return GetConfigurationActivationRequest.newBuilder()
+                .setClientActivationId(clientActivationId).build();
+    }
+
+    public static GetConfigurationActivationRequest buildGetConfigurationActivationByCompositeKeyRequest(
+            String configurationName, Timestamp startTime) {
+        return GetConfigurationActivationRequest.newBuilder()
+                .setCompositeKey(
+                        GetConfigurationActivationRequest.CompositeKey.newBuilder()
+                                .setConfigurationName(configurationName)
+                                .setStartTime(startTime)
+                                .build())
+                .build();
+    }
+
+    public static QueryConfigurationActivationsRequest buildQueryConfigurationActivationsRequest(
+            List<QueryConfigurationActivationsRequest.QueryConfigurationActivationsCriterion> criteria,
+            int limit, String pageToken) {
+        final QueryConfigurationActivationsRequest.Builder builder =
+                QueryConfigurationActivationsRequest.newBuilder();
+        builder.addAllCriteria(criteria);
+        if (limit > 0) builder.setLimit(limit);
+        if (pageToken != null && !pageToken.isBlank()) builder.setPageToken(pageToken);
+        return builder.build();
+    }
+
+    public static DeleteConfigurationActivationRequest buildDeleteConfigurationActivationByIdRequest(
+            String clientActivationId) {
+        return DeleteConfigurationActivationRequest.newBuilder()
+                .setClientActivationId(clientActivationId).build();
+    }
+
+    public static DeleteConfigurationActivationRequest buildDeleteConfigurationActivationByCompositeKeyRequest(
+            String configurationName, Timestamp startTime) {
+        return DeleteConfigurationActivationRequest.newBuilder()
+                .setCompositeKey(
+                        DeleteConfigurationActivationRequest.CompositeKey.newBuilder()
+                                .setConfigurationName(configurationName)
+                                .setStartTime(startTime)
+                                .build())
+                .build();
+    }
+
+    public static GetActiveConfigurationsRequest buildGetActiveConfigurationsRequest(Timestamp timestamp) {
+        return GetActiveConfigurationsRequest.newBuilder().setTimestamp(timestamp).build();
+    }
+
 }
