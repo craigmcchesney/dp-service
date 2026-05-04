@@ -1002,8 +1002,8 @@ public class ConfigurationIT extends AnnotationIntegrationTestIntermediate {
 
         final String deleted = annotationServiceWrapper.sendAndVerifyDeleteConfigurationActivationByCompositeKey(
                 "del-act-config-2", ts(T1_SECONDS, T1_NANOS), false, null);
-        assertNotNull(deleted);
-        assertFalse(deleted.isBlank());
+        // Response must carry the actual clientActivationId, not a synthetic composite-key string.
+        assertEquals("del-act-id-2", deleted);
     }
 
     @Test
@@ -1075,10 +1075,11 @@ public class ConfigurationIT extends AnnotationIntegrationTestIntermediate {
     }
 
     @Test
-    public void testGetActiveConfigurationsRejectMissingTimestamp() {
-        // send a zero timestamp (0 seconds, 0 nanos) to trigger validation error
+    public void testGetActiveConfigurationsDefaultsToNow() {
+        // Omitting the timestamp (passing null) should default to current server time and succeed.
+        // No scenario data needed — just verifying no error is returned.
         annotationServiceWrapper.sendAndVerifyGetActiveConfigurations(
-                ts(0L, 0L), true, "timestamp is required", 0);
+                null, false, null, 0);
     }
 
     @Test

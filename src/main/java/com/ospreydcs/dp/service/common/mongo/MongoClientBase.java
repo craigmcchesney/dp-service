@@ -279,7 +279,7 @@ public abstract class MongoClientBase {
         createMongoIndexConfigurations(Indexes.ascending(BsonConstants.BSON_KEY_CONFIGURATION_CATEGORY));
         createMongoIndexConfigurations(Indexes.ascending(BsonConstants.BSON_KEY_CONFIGURATION_PARENT_NAME));
         createMongoIndexConfigurations(Indexes.ascending(BsonConstants.BSON_KEY_TAGS));
-        createMongoIndexConfigurations(Indexes.ascending("attributes.name"));
+        createMongoIndexConfigurations(Indexes.ascending(BsonConstants.BSON_KEY_ATTRIBUTES));
         return true;
     }
 
@@ -302,7 +302,7 @@ public abstract class MongoClientBase {
         createMongoIndexConfigurationActivations(
                 Indexes.ascending(BsonConstants.BSON_KEY_ACTIVATION_END_TIME));
         createMongoIndexConfigurationActivations(Indexes.ascending(BsonConstants.BSON_KEY_TAGS));
-        createMongoIndexConfigurationActivations(Indexes.ascending("attributes.name"));
+        createMongoIndexConfigurationActivations(Indexes.ascending(BsonConstants.BSON_KEY_ATTRIBUTES));
         return true;
     }
 

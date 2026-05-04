@@ -720,14 +720,12 @@ public class MongoSyncAnnotationClient extends MongoSyncClient implements MongoA
     // =========================================================
 
     private boolean activationsExistForConfiguration(String configurationName) {
-        try {
-            final long count = mongoCollectionConfigurationActivations.countDocuments(
-                    eq(BsonConstants.BSON_KEY_ACTIVATION_CONFIGURATION_NAME, configurationName));
-            return count > 0;
-        } catch (Exception ex) {
-            logger.error("activationsExistForConfiguration: mongo exception: {}", ex.getMessage());
-            return false;
-        }
+        // Note: no exception catch here — callers must handle MongoException so that a transient
+        // DB error is not silently treated as "no activations exist", which could allow an unsafe
+        // category change or delete to proceed.
+        final long count = mongoCollectionConfigurationActivations.countDocuments(
+                eq(BsonConstants.BSON_KEY_ACTIVATION_CONFIGURATION_NAME, configurationName));
+        return count > 0;
     }
 
     @Override
@@ -748,14 +746,27 @@ public class MongoSyncAnnotationClient extends MongoSyncClient implements MongoA
         final ConfigurationDocument existingDocument = exactMatches.isEmpty() ? null : exactMatches.get(0);
 
         // reject category change if activations exist
-        if (existingDocument != null
-                && !existingDocument.getCategory().equals(document.getCategory())
-                && activationsExistForConfiguration(document.getConfigurationName())) {
-            final String errorMsg = "cannot change category for configurationName '"
-                    + document.getConfigurationName()
-                    + "': existing activations must be deleted first";
-            return new MongoSaveResult(true, errorMsg, null, false);
+        if (existingDocument != null && !existingDocument.getCategory().equals(document.getCategory())) {
+            final boolean hasActivations;
+            try {
+                hasActivations = activationsExistForConfiguration(document.getConfigurationName());
+            } catch (MongoException ex) {
+                final String errorMsg = "MongoException checking activations for configurationName '"
+                        + document.getConfigurationName() + "': " + ex.getMessage();
+                logger.error(errorMsg);
+                return new MongoSaveResult(true, errorMsg, null, false);
+            }
+            if (hasActivations) {
+                final String errorMsg = "cannot change category for configurationName '"
+                        + document.getConfigurationName()
+                        + "': existing activations must be deleted first";
+                return new MongoSaveResult(true, errorMsg, null, false);
+            }
         }
+        // NOTE: the activation existence check above and the subsequent replaceOne are not atomic.
+        // A concurrent saveConfigurationActivation could slip in between them on a multi-threaded
+        // deployment. Full atomicity would require MongoDB transactions (replica set only). This is
+        // an accepted limitation for v1; tracked for resolution when transaction support is added.
 
         try {
             if (existingDocument == null) {
@@ -911,7 +922,16 @@ public class MongoSyncAnnotationClient extends MongoSyncClient implements MongoA
     @Override
     public MongoDeleteResult deleteConfiguration(String configurationName) {
 
-        if (activationsExistForConfiguration(configurationName)) {
+        final boolean hasActivations;
+        try {
+            hasActivations = activationsExistForConfiguration(configurationName);
+        } catch (MongoException ex) {
+            final String errorMsg = "MongoException checking activations for configurationName '"
+                    + configurationName + "': " + ex.getMessage();
+            logger.error(errorMsg);
+            return new MongoDeleteResult(true, errorMsg, null);
+        }
+        if (hasActivations) {
             final String errorMsg = "cannot delete configurationName '" + configurationName
                     + "': existing activations must be deleted first";
             return new MongoDeleteResult(true, errorMsg, null);
@@ -943,48 +963,52 @@ public class MongoSyncAnnotationClient extends MongoSyncClient implements MongoA
      * Checks if an overlap exists for the given activation parameters.
      * Overlap rules: same configurationName OR same internalCategory, time intervals overlap.
      * excludeClientActivationId: exclude this record from the overlap check (used for updates).
+     *
+     * Note: no exception catch here — callers must handle MongoException so that a transient DB
+     * error is not silently treated as "no overlap", which would allow overlapping activations to
+     * be inserted in violation of the API contract.
+     *
+     * Also note: the overlap check and the subsequent insert/replace are not atomic operations.
+     * Concurrent saves on multiple worker threads could both pass this check before either write
+     * completes, resulting in overlapping activations being persisted. Full atomicity would require
+     * MongoDB transactions (replica set only). This is an accepted limitation for v1; tracked for
+     * resolution when transaction support is added.
      */
     private boolean overlapExists(String configurationName, String internalCategory,
                                    Instant startTime, Instant endTime,
                                    String excludeClientActivationId) {
-        try {
-            // endTime filter for the candidate: candidate.endTime > startTime OR candidate.endTime absent
-            final Bson candidateEndTimeFilter = or(
-                    exists(BsonConstants.BSON_KEY_ACTIVATION_END_TIME, false),
-                    gt(BsonConstants.BSON_KEY_ACTIVATION_END_TIME, startTime)
-            );
+        // endTime filter for the candidate: candidate.endTime > startTime OR candidate.endTime absent
+        final Bson candidateEndTimeFilter = or(
+                exists(BsonConstants.BSON_KEY_ACTIVATION_END_TIME, false),
+                gt(BsonConstants.BSON_KEY_ACTIVATION_END_TIME, startTime)
+        );
 
-            // startTime filter for the candidate: candidate.startTime < endTime (skip if endTime null — always overlaps)
-            final Bson candidateStartTimeFilter = endTime != null
-                    ? lt(BsonConstants.BSON_KEY_ACTIVATION_START_TIME, endTime)
-                    : null;
+        // startTime filter for the candidate: candidate.startTime < endTime (skip if endTime null — always overlaps)
+        final Bson candidateStartTimeFilter = endTime != null
+                ? lt(BsonConstants.BSON_KEY_ACTIVATION_START_TIME, endTime)
+                : null;
 
-            final Bson excludeFilter = (excludeClientActivationId != null && !excludeClientActivationId.isBlank())
-                    ? ne(BsonConstants.BSON_KEY_ACTIVATION_CLIENT_ID, excludeClientActivationId)
-                    : null;
+        final Bson excludeFilter = (excludeClientActivationId != null && !excludeClientActivationId.isBlank())
+                ? ne(BsonConstants.BSON_KEY_ACTIVATION_CLIENT_ID, excludeClientActivationId)
+                : null;
 
-            // Query 1: same configurationName overlap
-            final List<Bson> q1Filters = new ArrayList<>();
-            q1Filters.add(eq(BsonConstants.BSON_KEY_ACTIVATION_CONFIGURATION_NAME, configurationName));
-            if (excludeFilter != null) q1Filters.add(excludeFilter);
-            if (candidateStartTimeFilter != null) q1Filters.add(candidateStartTimeFilter);
-            q1Filters.add(candidateEndTimeFilter);
-            final long count1 = mongoCollectionConfigurationActivations.countDocuments(and(q1Filters));
-            if (count1 > 0) return true;
+        // Query 1: same configurationName overlap
+        final List<Bson> q1Filters = new ArrayList<>();
+        q1Filters.add(eq(BsonConstants.BSON_KEY_ACTIVATION_CONFIGURATION_NAME, configurationName));
+        if (excludeFilter != null) q1Filters.add(excludeFilter);
+        if (candidateStartTimeFilter != null) q1Filters.add(candidateStartTimeFilter);
+        q1Filters.add(candidateEndTimeFilter);
+        final long count1 = mongoCollectionConfigurationActivations.countDocuments(and(q1Filters));
+        if (count1 > 0) return true;
 
-            // Query 2: same category overlap
-            final List<Bson> q2Filters = new ArrayList<>();
-            q2Filters.add(eq(BsonConstants.BSON_KEY_ACTIVATION_INTERNAL_CATEGORY, internalCategory));
-            if (excludeFilter != null) q2Filters.add(excludeFilter);
-            if (candidateStartTimeFilter != null) q2Filters.add(candidateStartTimeFilter);
-            q2Filters.add(candidateEndTimeFilter);
-            final long count2 = mongoCollectionConfigurationActivations.countDocuments(and(q2Filters));
-            return count2 > 0;
-
-        } catch (MongoException ex) {
-            logger.error("overlapExists: mongo exception: {}", ex.getMessage());
-            return false;
-        }
+        // Query 2: same category overlap
+        final List<Bson> q2Filters = new ArrayList<>();
+        q2Filters.add(eq(BsonConstants.BSON_KEY_ACTIVATION_INTERNAL_CATEGORY, internalCategory));
+        if (excludeFilter != null) q2Filters.add(excludeFilter);
+        if (candidateStartTimeFilter != null) q2Filters.add(candidateStartTimeFilter);
+        q2Filters.add(candidateEndTimeFilter);
+        final long count2 = mongoCollectionConfigurationActivations.countDocuments(and(q2Filters));
+        return count2 > 0;
     }
 
     @Override
@@ -1005,8 +1029,17 @@ public class MongoSyncAnnotationClient extends MongoSyncClient implements MongoA
                     ? document.getClientActivationId() : null;
 
             // check for overlap
-            if (overlapExists(document.getConfigurationName(), document.getInternalCategory(),
-                    document.getStartTime(), document.getEndTime(), excludeId)) {
+            final boolean overlap;
+            try {
+                overlap = overlapExists(document.getConfigurationName(), document.getInternalCategory(),
+                        document.getStartTime(), document.getEndTime(), excludeId);
+            } catch (MongoException ex) {
+                final String errorMsg = "MongoException checking activation overlap for configurationName '"
+                        + document.getConfigurationName() + "': " + ex.getMessage();
+                logger.error(errorMsg);
+                return new MongoSaveResult(true, errorMsg, null, false);
+            }
+            if (overlap) {
                 return new MongoSaveResult(true,
                         "overlapping activation exists for configurationName '"
                                 + document.getConfigurationName() + "' or category '"
@@ -1048,28 +1081,22 @@ public class MongoSyncAnnotationClient extends MongoSyncClient implements MongoA
 
     @Override
     public ConfigurationActivationDocument findConfigurationActivationById(String clientActivationId) {
-        try {
-            return mongoCollectionConfigurationActivations.find(
-                    eq(BsonConstants.BSON_KEY_ACTIVATION_CLIENT_ID, clientActivationId)).first();
-        } catch (MongoException ex) {
-            logger.error("findConfigurationActivationById: mongo exception: {}", ex.getMessage());
-            return null;
-        }
+        // Note: MongoException is not caught here — callers must handle it so that a backend failure
+        // is surfaced as RESULT_STATUS_ERROR rather than silently reported as "not found".
+        return mongoCollectionConfigurationActivations.find(
+                eq(BsonConstants.BSON_KEY_ACTIVATION_CLIENT_ID, clientActivationId)).first();
     }
 
     @Override
     public ConfigurationActivationDocument findConfigurationActivationByCompositeKey(
             String configurationName, Instant startTime) {
-        try {
-            return mongoCollectionConfigurationActivations.find(
-                    and(
-                            eq(BsonConstants.BSON_KEY_ACTIVATION_CONFIGURATION_NAME, configurationName),
-                            eq(BsonConstants.BSON_KEY_ACTIVATION_START_TIME, startTime)
-                    )).first();
-        } catch (MongoException ex) {
-            logger.error("findConfigurationActivationByCompositeKey: mongo exception: {}", ex.getMessage());
-            return null;
-        }
+        // Note: MongoException is not caught here — callers must handle it so that a backend failure
+        // is surfaced as RESULT_STATUS_ERROR rather than silently reported as "not found".
+        return mongoCollectionConfigurationActivations.find(
+                and(
+                        eq(BsonConstants.BSON_KEY_ACTIVATION_CONFIGURATION_NAME, configurationName),
+                        eq(BsonConstants.BSON_KEY_ACTIVATION_START_TIME, startTime)
+                )).first();
     }
 
     @Override
@@ -1138,8 +1165,14 @@ public class MongoSyncAnnotationClient extends MongoSyncClient implements MongoA
 
         // pagination
         final String pageToken = request.getPageToken();
-        final int skip = (pageToken == null || pageToken.isEmpty()) ? 0
-                : Integer.parseInt(new String(Base64.getDecoder().decode(pageToken), StandardCharsets.UTF_8));
+        final int skip;
+        try {
+            skip = (pageToken == null || pageToken.isEmpty()) ? 0
+                    : Integer.parseInt(new String(Base64.getDecoder().decode(pageToken), StandardCharsets.UTF_8));
+        } catch (IllegalArgumentException ex) {
+            logger.error("executeQueryConfigurationActivations: invalid pageToken: {}", ex.getMessage());
+            return null;
+        }
         int limit = request.getLimit();
         if (limit <= 0) limit = 100;
 
@@ -1195,6 +1228,12 @@ public class MongoSyncAnnotationClient extends MongoSyncClient implements MongoA
                     eq(BsonConstants.BSON_KEY_ACTIVATION_CONFIGURATION_NAME, configurationName),
                     eq(BsonConstants.BSON_KEY_ACTIVATION_START_TIME, startTime)
             );
+            // Fetch the document first so we can return its actual clientActivationId in the response.
+            final ConfigurationActivationDocument existing =
+                    mongoCollectionConfigurationActivations.find(filter).first();
+            if (existing == null) {
+                return new MongoDeleteResult(false, "", null);
+            }
             final DeleteResult result = mongoCollectionConfigurationActivations.deleteOne(filter);
             if (!result.wasAcknowledged()) {
                 final String errorMsg = "deleteOne not acknowledged for compositeKey configurationName: "
@@ -1202,11 +1241,7 @@ public class MongoSyncAnnotationClient extends MongoSyncClient implements MongoA
                 logger.error(errorMsg);
                 return new MongoDeleteResult(true, errorMsg, null);
             }
-            if (result.getDeletedCount() == 0) {
-                return new MongoDeleteResult(false, "", null);
-            }
-            // return composite key as identifier
-            return new MongoDeleteResult(false, "", configurationName + "@" + startTime);
+            return new MongoDeleteResult(false, "", existing.getClientActivationId());
         } catch (MongoException ex) {
             final String errorMsg = "MongoException deleting ConfigurationActivationDocument by compositeKey: "
                     + ex.getMessage();

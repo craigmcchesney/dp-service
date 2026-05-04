@@ -129,7 +129,7 @@ Results are sorted by `pvName` ascending. Pagination uses a base64-encoded integ
 
 **`queryConfigurations`:** Builds a MongoDB filter from a list of criteria combined with AND semantics. Each criterion is one of:
 - `ConfigurationNameCriterion` — exact, prefix, or contains match on `configurationName`
-- `CategoryCriterion` — exact, prefix, or contains match on `category`
+- `CategoryCriterion` — `$in` match on `category`
 - `TagsCriterion` — `$in` match on `tags`
 - `AttributesCriterion` — key-only (`$exists`) or key + values (`$in`) match on `attributes`
 

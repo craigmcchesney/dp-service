@@ -31,7 +31,8 @@ public class DeleteConfigurationActivationDispatcher extends Dispatcher {
         } else if (result.deletedPvName == null) {
             final String keyDescription = switch (request.getKeyCase()) {
                 case CLIENTACTIVATIONID -> "clientActivationId: " + request.getClientActivationId();
-                case COMPOSITEKEY -> "configurationName: " + request.getCompositeKey().getConfigurationName();
+                case COMPOSITEKEY -> "configurationName: " + request.getCompositeKey().getConfigurationName()
+                        + " startTime: " + request.getCompositeKey().getStartTime().getEpochSeconds();
                 default -> "unknown key";
             };
             final String msg = "no ConfigurationActivation record found for: " + keyDescription;

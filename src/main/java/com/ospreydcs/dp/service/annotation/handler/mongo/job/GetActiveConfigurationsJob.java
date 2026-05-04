@@ -38,15 +38,15 @@ public class GetActiveConfigurationsJob extends HandlerJob {
     public void execute() {
         logger.debug("executing GetActiveConfigurationsJob id: {}", responseObserver.hashCode());
 
-        // validate timestamp is present and non-zero
-        if (!request.hasTimestamp()
-                || (request.getTimestamp().getEpochSeconds() == 0 && request.getTimestamp().getNanoseconds() == 0)) {
-            dispatcher.handleValidationError(new ResultStatus(
-                    true, "timestamp is required; supply the explicit point in time to query"));
-            return;
+        // Use the request timestamp if supplied, otherwise default to current server time.
+        final Instant timestamp;
+        if (request.hasTimestamp()
+                && (request.getTimestamp().getEpochSeconds() != 0 || request.getTimestamp().getNanoseconds() != 0)) {
+            timestamp = TimestampUtility.instantFromTimestamp(request.getTimestamp());
+        } else {
+            timestamp = Instant.now();
         }
 
-        final Instant timestamp = TimestampUtility.instantFromTimestamp(request.getTimestamp());
         final ConfigurationActivationQueryResult result = mongoClient.getActiveConfigurations(timestamp);
         if (result == null) {
             dispatcher.handleError("error executing getActiveConfigurations query");
