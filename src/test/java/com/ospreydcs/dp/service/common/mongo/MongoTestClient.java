@@ -32,15 +32,19 @@ public class MongoTestClient extends MongoSyncClient {
 
     // constants
     public static final String MONGO_TEST_DATABASE_NAME = "dp-test";
+    public static final String CFG_KEY_TEST_DATABASE_NAME = "MongoClient.testDatabaseName";
     public static final int MONGO_FIND_RETRY_COUNT = 300;
     public static final int MONGO_FIND_RETRY_INTERVAL_MILLIS = 100;
 
     @Override
     public boolean init() {
 
+        // resolve test database name from config (supports DP_MONGO_TEST_DB_NAME env override), falling back to constant
+        String testDatabaseName = configMgr().getConfigString(CFG_KEY_TEST_DATABASE_NAME, MONGO_TEST_DATABASE_NAME);
+
         // override the default database name globally
-        logger.info("overriding db name globally to: {}", MONGO_TEST_DATABASE_NAME);
-        MongoClientBase.setMongoDatabaseName(MONGO_TEST_DATABASE_NAME);
+        logger.warn("overriding db name globally to: {} — THIS DATABASE WILL BE DROPPED", testDatabaseName);
+        MongoClientBase.setMongoDatabaseName(testDatabaseName);
 
         // init so we have database client for dropping existing db
         super.init();
@@ -52,8 +56,9 @@ public class MongoTestClient extends MongoSyncClient {
     }
 
     public void dropTestDatabase() {
-        logger.info("dropping database: {}", MONGO_TEST_DATABASE_NAME);
-        MongoDatabase database = this.mongoClient.getDatabase(MONGO_TEST_DATABASE_NAME);
+        String dbName = MongoClientBase.getMongoDatabaseName();
+        logger.warn("dropping database: {}", dbName);
+        MongoDatabase database = this.mongoClient.getDatabase(dbName);
         database.drop();
     }
 
