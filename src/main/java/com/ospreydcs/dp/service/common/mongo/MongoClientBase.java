@@ -315,7 +315,7 @@ public abstract class MongoClientBase {
         return uriOverride;
     }
 
-    protected static String getMongoDatabaseName() {
+    public static String getMongoDatabaseName() {
         if (mongoDatabaseName == null) {
             return MONGO_DATABASE_NAME;
         } else {

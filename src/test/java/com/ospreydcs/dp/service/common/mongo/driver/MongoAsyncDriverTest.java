@@ -35,7 +35,7 @@ public class MongoAsyncDriverTest {
         MongoTestClient.prepareTestDatabase();
 
         mongoClient = MongoClients.create(MongoClientBase.getMongoConnectString());
-        mongoDatabase = mongoClient.getDatabase(MongoTestClient.MONGO_TEST_DATABASE_NAME);
+        mongoDatabase = mongoClient.getDatabase(MongoClientBase.getMongoDatabaseName());
     }
 
     @AfterClass
