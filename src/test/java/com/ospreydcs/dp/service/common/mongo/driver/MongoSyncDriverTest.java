@@ -6,7 +6,6 @@ import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.result.InsertManyResult;
-import com.ospreydcs.dp.service.common.mongo.MongoClientBase;
 import com.ospreydcs.dp.service.common.mongo.MongoTestClient;
 import org.bson.Document;
 import org.junit.AfterClass;
@@ -32,8 +31,8 @@ public class MongoSyncDriverTest {
         // Use test db client to set database name globally to "dp-test" and remove that database if it already exists
         MongoTestClient.prepareTestDatabase();
 
-        mongoClient = MongoClients.create(MongoClientBase.getMongoConnectString());
-        mongoDatabase = mongoClient.getDatabase(MongoClientBase.getMongoDatabaseName());
+        mongoClient = MongoClients.create(MongoTestClient.getMongoConnectString());
+        mongoDatabase = mongoClient.getDatabase(MongoTestClient.getConfiguredTestDatabaseName());
     }
 
     @AfterClass

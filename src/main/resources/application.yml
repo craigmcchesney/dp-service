@@ -8,12 +8,6 @@ MongoClient:
   #   mongo-2.mongo-headless.ns.svc.cluster.local:27017/?replicaSet=rs0&authSource=admin
   uri: ${DP_MONGO_DB_URI:mongodb://admin:admin@localhost:27017/}
 
-  # MongoClient.testDatabaseName: Name of the MongoDB database used by integration tests.
-  # WARNING: This database is DROPPED and recreated at the start of every test run.
-  # Never point this at a database containing data you want to keep.
-  # Override via DP_MONGO_TEST_DB_NAME environment variable when running tests against a non-local cluster.
-  testDatabaseName: ${DP_MONGO_TEST_DB_NAME:dp-test}
-
 # GrpcClient: General settings for gRPC clients.
 GrpcClient:
 

@@ -315,7 +315,7 @@ public abstract class MongoClientBase {
         return uriOverride;
     }
 
-    public static String getMongoDatabaseName() {
+    protected static String getMongoDatabaseName() {
         if (mongoDatabaseName == null) {
             return MONGO_DATABASE_NAME;
         } else {
@@ -324,7 +324,7 @@ public abstract class MongoClientBase {
     }
 
     protected static void setMongoDatabaseName(String databaseName) {
-        if (databaseName.isBlank()) {
+        if (databaseName == null || databaseName.isBlank()) {
             logger.error("setDatabaseName specified database name is empty");
         } else {
             mongoDatabaseName = databaseName;

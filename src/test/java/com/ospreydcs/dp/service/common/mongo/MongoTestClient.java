@@ -56,7 +56,11 @@ public class MongoTestClient extends MongoSyncClient {
     }
 
     public void dropTestDatabase() {
-        String dbName = MongoClientBase.getMongoDatabaseName();
+        String dbName = getMongoDatabaseName();
+        if (dbName.equals(MongoClientBase.MONGO_DATABASE_NAME)) {
+            throw new IllegalStateException(
+                    "dropTestDatabase() refused to drop production database: " + dbName);
+        }
         logger.warn("dropping database: {}", dbName);
         MongoDatabase database = this.mongoClient.getDatabase(dbName);
         database.drop();
@@ -65,6 +69,10 @@ public class MongoTestClient extends MongoSyncClient {
     public static void prepareTestDatabase() {
         MongoTestClient testClient = new MongoTestClient();
         testClient.init();
+    }
+
+    public static String getConfiguredTestDatabaseName() {
+        return getMongoDatabaseName();
     }
 
     public ProviderDocument findProvider(String providerId) {
