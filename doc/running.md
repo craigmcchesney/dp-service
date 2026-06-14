@@ -131,6 +131,7 @@ services:
 Below is the list of environment variables referenced in the project's `application.yml`. Each variable maps to a configuration property; if not set, the YAML default applies.
 
 - `DP_MONGO_DB_URI` : Full MongoDB connection string. Example: `mongodb://user:pass@host:27017/?authSource=admin`
+- `DP_MONGO_TEST_DB_NAME` : Name of the MongoDB database used by integration tests (default: `dp-test`). **WARNING: this database is dropped and recreated at the start of every test run — never point it at a database containing data you want to keep.**
 - `DP_GRPC_CLIENT_HOSTNAME` : gRPC client hostname (default: `localhost`)
 - `DP_GRPC_CLIENT_KEEP_ALIVE_TIME_SECONDS` : gRPC client keepalive time in seconds (default: `45`)
 - `DP_GRPC_CLIENT_KEEP_ALIVE_TIMEOUT_SECONDS` : gRPC client keepalive timeout in seconds (default: `20`)
@@ -167,3 +168,37 @@ Below is the list of environment variables referenced in the project's `applicat
 - `DP_INGESTION_STREAM_TRIGGERED_EVENT_MANAGER_EVENT_CLEANUP_INTERVAL_MILLIS` : TriggeredEventManager cleanup interval in ms (default: `5000`)
 
 TODO: add a short example `docker-compose.yml` snippet that demonstrates mounting configuration files while still using environment overrides, I can add that as a follow-up.
+
+## Running integration tests against a non-local MongoDB cluster
+
+The integration test framework is designed for development use: it drops and recreates the test database before each test class runs, starting from a completely clean state. This is intentional — the tests are not designed to tolerate pre-existing data.
+
+### Prerequisites
+
+- The MongoDB user in the connection URI must have **`dbOwner`** (or equivalent `dbAdmin` + `readWrite`) privileges on the test database. The framework drops the entire database on each run; a `readWrite`-only user is insufficient.
+- The test database name must be a **dedicated throwaway name** that does not conflict with any production or shared database on the cluster.
+
+### Configuration
+
+Set two environment variables before running the tests:
+
+```bash
+# MongoDB connection URI for the target cluster
+export DP_MONGO_DB_URI="mongodb://testuser:testpass@cluster-host:27017/?authSource=admin"
+
+# Name of the dedicated test database (will be DROPPED before each test class)
+export DP_MONGO_TEST_DB_NAME="dp-test-functional"
+
+mvn test -Dtest=PvMetadataIT
+```
+
+Or to run all integration tests:
+
+```bash
+export DP_MONGO_DB_URI="mongodb://testuser:testpass@cluster-host:27017/?authSource=admin"
+export DP_MONGO_TEST_DB_NAME="dp-test-functional"
+
+mvn test
+```
+
+> **WARNING:** The database named by `DP_MONGO_TEST_DB_NAME` is **dropped without confirmation** at the start of every test run. Use a name that is reserved exclusively for this purpose.
