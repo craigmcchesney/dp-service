@@ -131,6 +131,7 @@ services:
 Below is the list of environment variables referenced in the project's `application.yml`. Each variable maps to a configuration property; if not set, the YAML default applies.
 
 - `DP_MONGO_DB_URI` : Full MongoDB connection string. Example: `mongodb://user:pass@host:27017/?authSource=admin`
+- `DP_MONGO_BENCHMARK_DB_NAME` : Name of the MongoDB database used by the benchmark (default: `dp-benchmark`). **WARNING: this database is dropped and recreated at the start of every benchmark run — never point it at a database containing data you want to keep.**
 - `DP_MONGO_TEST_DB_NAME` : Name of the MongoDB database used by integration tests (default: `dp-test`). **WARNING: this database is dropped and recreated at the start of every test run — never point it at a database containing data you want to keep.**
 - `DP_GRPC_CLIENT_HOSTNAME` : gRPC client hostname (default: `localhost`)
 - `DP_GRPC_CLIENT_KEEP_ALIVE_TIME_SECONDS` : gRPC client keepalive time in seconds (default: `45`)
@@ -202,3 +203,36 @@ mvn test
 ```
 
 > **WARNING:** The database named by `DP_MONGO_TEST_DB_NAME` is **dropped without confirmation** at the start of every test run. Use a name that is reserved exclusively for this purpose.
+
+## Running benchmarks against a non-local MongoDB cluster
+
+The benchmark server drops and recreates the benchmark database at the start of every run, starting from a completely clean state. This is intentional — benchmarks require an empty database for accurate measurements.
+
+### Prerequisites
+
+- The MongoDB user in the connection URI must have **`dbOwner`** (or equivalent `dbAdmin` + `readWrite`) privileges on the benchmark database. The server drops the entire database on each run; a `readWrite`-only user is insufficient.
+- The benchmark database name must be a **dedicated throwaway name** that does not conflict with any production or shared database on the cluster.
+
+### Configuration
+
+Set two environment variables before starting the benchmark server:
+
+```bash
+# MongoDB connection URI for the target cluster
+export DP_MONGO_DB_URI="mongodb://benchuser:benchpass@cluster-host:27017/?authSource=admin"
+
+# Name of the dedicated benchmark database (will be DROPPED at the start of every run)
+export DP_MONGO_BENCHMARK_DB_NAME="dp-benchmark-functional"
+
+java -Ddp.config=~/data-platform/config/dp.yml -Dlog4j.configurationFile=~/data-platform/config/log4j2.xml \
+  -cp ~/data-platform/lib/dp-service.jar com.ospreydcs.dp.service.ingest.benchmark.BenchmarkIngestionGrpcServer
+```
+
+Then run the benchmark client (no MongoDB connection required — connects to the server via gRPC only):
+
+```bash
+java -Ddp.config=~/data-platform/config/dp.yml -Dlog4j.configurationFile=~/data-platform/config/log4j2.xml \
+  -cp ~/data-platform/lib/dp-service.jar com.ospreydcs.dp.service.ingest.benchmark.BenchmarkIngestDataStream
+```
+
+> **WARNING:** The database named by `DP_MONGO_BENCHMARK_DB_NAME` is **dropped without confirmation** at the start of every benchmark server run. Use a name that is reserved exclusively for this purpose.

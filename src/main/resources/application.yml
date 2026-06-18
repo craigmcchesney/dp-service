@@ -8,6 +8,11 @@ MongoClient:
   #   mongo-2.mongo-headless.ns.svc.cluster.local:27017/?replicaSet=rs0&authSource=admin
   uri: ${DP_MONGO_DB_URI:mongodb://admin:admin@localhost:27017/}
 
+  # MongoClient.benchmarkDatabaseName: Name of the MongoDB database used by the benchmark.
+  # WARNING: this database is dropped and recreated at the start of every benchmark run —
+  # never point it at a database containing data you want to keep.
+  benchmarkDatabaseName: ${DP_MONGO_BENCHMARK_DB_NAME:dp-benchmark}
+
 # GrpcClient: General settings for gRPC clients.
 GrpcClient:
 
