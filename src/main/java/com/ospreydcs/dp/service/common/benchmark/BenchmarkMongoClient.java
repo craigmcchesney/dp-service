@@ -13,13 +13,21 @@ public class BenchmarkMongoClient extends MongoSyncClient {
 
     // constants
     public static final String BENCHMARK_DATABASE_NAME = "dp-benchmark";
+    public static final String CFG_KEY_BENCHMARK_DATABASE_NAME = "MongoClient.benchmarkDatabaseName";
 
     @Override
     public boolean init() {
 
+        // resolve benchmark database name from config (supports DP_MONGO_BENCHMARK_DB_NAME env override), falling back to constant
+        String benchmarkDatabaseName = configMgr().getConfigString(CFG_KEY_BENCHMARK_DATABASE_NAME, BENCHMARK_DATABASE_NAME);
+
         // override the default database name globally
-        logger.info("overriding db name globally to: {}", BENCHMARK_DATABASE_NAME);
-        MongoClientBase.setMongoDatabaseName(BENCHMARK_DATABASE_NAME);
+        if (!benchmarkDatabaseName.equals(BENCHMARK_DATABASE_NAME)) {
+            logger.warn("overriding benchmark db name globally to: {} — THIS DATABASE WILL BE DROPPED", benchmarkDatabaseName);
+        } else {
+            logger.info("overriding db name globally to: {}", benchmarkDatabaseName);
+        }
+        MongoClientBase.setMongoDatabaseName(benchmarkDatabaseName);
 
         // init so we have database client for dropping existing db
         super.init();
@@ -31,8 +39,13 @@ public class BenchmarkMongoClient extends MongoSyncClient {
     }
 
     public void dropBenchmarkDatabase() {
-        logger.info("dropping database: {}", BENCHMARK_DATABASE_NAME);
-        MongoDatabase database = this.mongoClient.getDatabase(BENCHMARK_DATABASE_NAME);
+        String dbName = getMongoDatabaseName();
+        if (dbName.equals(MongoClientBase.MONGO_DATABASE_NAME)) {
+            throw new IllegalStateException(
+                    "dropBenchmarkDatabase() refused to drop production database: " + dbName);
+        }
+        logger.warn("dropping database: {}", dbName);
+        MongoDatabase database = this.mongoClient.getDatabase(dbName);
         database.drop();
     }
 
