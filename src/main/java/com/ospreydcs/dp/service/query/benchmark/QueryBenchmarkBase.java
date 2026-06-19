@@ -38,7 +38,8 @@ public abstract class QueryBenchmarkBase {
     private static final int NUM_SCENARIO_SECONDS = 60;
 
     // configuration
-    public static final String BENCHMARK_GRPC_CONNECT_STRING = "localhost:60052";
+    public static final String CFG_KEY_GRPC_CONNECT_STRING = "QueryBenchmark.grpcConnectString";
+    public static final String DEFAULT_GRPC_CONNECT_STRING = "localhost:60052";
 
     protected static ConfigurationManager configMgr() {
         return ConfigurationManager.getInstance();
@@ -481,7 +482,7 @@ public abstract class QueryBenchmarkBase {
         //
         // For the example we use plaintext insecure credentials to avoid needing TLS certificates. To
         // use TLS, use TlsChannelCredentials instead.
-        String connectString = BENCHMARK_GRPC_CONNECT_STRING;
+        String connectString = configMgr().getConfigString(CFG_KEY_GRPC_CONNECT_STRING, DEFAULT_GRPC_CONNECT_STRING);
         logger.info("Creating gRPC channel using connect string: {}", connectString);
         final ManagedChannel channel =
                 Grpc.newChannelBuilder(connectString, InsecureChannelCredentials.create()).build();

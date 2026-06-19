@@ -107,7 +107,7 @@ QueryHandler:
 QueryBenchmark:
 
   # QueryBenchmark.grpcConnectString: String used for gRPC connection to Query Service including "host:port".
-  grpcConnectString: "${DP_QUERY_BENCHMARK_GRPC_CONNECT_STRING:localhost:50052}"
+  grpcConnectString: "${DP_QUERY_BENCHMARK_GRPC_CONNECT_STRING:localhost:60052}"
 
 # annotationServer: Settings for the annotation server process.
 AnnotationServer:
