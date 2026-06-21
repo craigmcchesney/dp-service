@@ -44,7 +44,7 @@ The MongoDB user in the connection URI must have `dbOwner` (or equivalent `dbAdm
 
 ### Overriding via environment variables
 
-Set `DP_MONGO_DB_URI` and/or `DP_MONGO_BENCHMARK_DB_NAME` in the environment before starting the benchmark server.  The benchmark client applications connect to the server via gRPC only and do not need these variables set.
+Set `DP_MONGO_DB_URI` and/or `DP_MONGO_BENCHMARK_DB_NAME` in the environment before starting the benchmark server.  The ingestion benchmark client applications connect to the server via gRPC only and do not need these variables set.  The query benchmark client applications access MongoDB directly, so they require these variables as well — see section 6.
 
 ```bash
 export DP_MONGO_DB_URI="mongodb://benchuser:benchpass@cluster-host:27017/?authSource=admin"
@@ -105,7 +105,7 @@ java -Ddp.config=~/data-platform/config/dp.yml \
   com.ospreydcs.dp.service.ingest.benchmark.BenchmarkIngestionGrpcServer
 ```
 
-To override the database settings, add the environment variables or VM options as shown in section 0.
+To override the database settings, add the environment variables or VM options as shown in section 1.
 
 The data-platform repo includes bash scripts for starting the benchmark server — see the [data-platform benchmark scripts](https://github.com/osprey-dcs/data-platform/blob/main/README-dp-support.md#data-platform-performance-benchmarks).
 
@@ -115,7 +115,7 @@ The data-platform repo includes bash scripts for starting the benchmark server �
 
 `BenchmarkIngestDataStream` measures unidirectional streaming ingestion performance.  It connects to the benchmark server via gRPC, sends a stream of ingestion requests using multiple concurrent threads, and prints a performance summary on completion.
 
-The client does not connect to MongoDB directly — only the server needs the database override settings from section 0.
+The client does not connect to MongoDB directly — only the server needs the database override settings from section 1.
 
 If the benchmark server is not running on `localhost:60051`, override the connect string via the `DP_INGESTION_BENCHMARK_GRPC_CONNECT_STRING` environment variable or the `-Ddp.IngestionBenchmark.grpcConnectString` VM option.
 
@@ -200,7 +200,7 @@ java -Ddp.config=~/data-platform/config/dp.yml \
   com.ospreydcs.dp.service.query.benchmark.BenchmarkQueryGrpcServer
 ```
 
-To override the database settings, add the environment variables or VM options as shown in section 0.
+To override the database settings, add the environment variables or VM options as shown in section 1.
 
 The data-platform repo includes bash scripts for starting the benchmark server — see the [data-platform benchmark scripts](https://github.com/osprey-dcs/data-platform/blob/main/README-dp-support.md#data-platform-performance-benchmarks).
 
@@ -208,7 +208,7 @@ The data-platform repo includes bash scripts for starting the benchmark server �
 
 ## 6. Running the Query Benchmark Client Applications
 
-Unlike the ingestion benchmark clients, the query benchmark clients connect to MongoDB directly to load test data before querying.  This means the database override settings from section 0 must be applied when running the query client applications as well as the server.
+Unlike the ingestion benchmark clients, the query benchmark clients connect to MongoDB directly to load test data before querying.  This means the database override settings from section 1 must be applied when running the query client applications as well as the server.
 
 If the benchmark server is not running on `localhost:60052`, override the connect string via the `DP_QUERY_BENCHMARK_GRPC_CONNECT_STRING` environment variable or the `-Ddp.QueryBenchmark.grpcConnectString` VM option.
 
