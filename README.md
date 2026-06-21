@@ -389,3 +389,8 @@ Options for configuring Data Platform services are desribed in more detail in [t
 * [regression testing](./doc/developer-notes.md#regression-testing)
 * [integration testing](./doc/developer-notes.md#integration-testing)
   * [benchmark integration test](./doc/developer-notes.md#benchmark-integration-test)
+
+## Running integration tests and performance benchmarks
+
+* [running the integration tests](./doc/testing-overview.md)
+* [running ingestion and query performance benchmarks](./doc/benchmark-overview.md)
