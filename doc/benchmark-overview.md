@@ -44,7 +44,7 @@ The MongoDB user in the connection URI must have `dbOwner` (or equivalent `dbAdm
 
 ### Overriding via environment variables
 
-Set `DP_MONGO_DB_URI` and/or `DP_MONGO_BENCHMARK_DB_NAME` in the environment before starting the benchmark server.  The ingestion benchmark client applications connect to the server via gRPC only and do not need these variables set.  The query benchmark client applications access MongoDB directly, so they require these variables as well — see section 6.
+Set `DP_MONGO_DB_URI` and/or `DP_MONGO_BENCHMARK_DB_NAME` in the environment before starting the benchmark server.  The ingestion benchmark client applications connect to the server via gRPC only and do not need these variables set.  The query benchmark client applications access MongoDB directly, so run the query clients with these variables set as well — see section 6.
 
 ```bash
 export DP_MONGO_DB_URI="mongodb://benchuser:benchpass@cluster-host:27017/?authSource=admin"
